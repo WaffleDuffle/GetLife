@@ -1,36 +1,61 @@
 import tkinter as tk
 from tkinter import PhotoImage
+from PIL import Image, ImageTk
 class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
         # name of the app
         self.master.title("GetLife")
 
-        # generate window
+        #load background
+        bg_image_path = '/home/waffleduffle/Desktop/python_proj_etti/GetLife/resources/login_background.png'
+        self.bg_image = PhotoImage(file=bg_image_path)
 
-        self.myframe = tk.Frame(root, width = 600, height = 800, bg = "#7bd3ea") 
-        self.myframe.grid(row=0, column=0)
-        self.myframe.grid_propagate(False)
+        self.canvas = tk.Canvas(self.master, width=1000, height=700)
+        self.canvas.pack()
+        self.canvas.pack_propagate(False)
+        self.canvas.create_image(0, 0, anchor=tk.NW, image=self.bg_image)
 
-        self.create_widgets()
+        self.login_widgets()
         
 
-    def create_widgets(self):
+    def login_widgets(self):
 
-        #import logo
-        self.myimage = PhotoImage(file = '/home/waffleduffle/Desktop/python_proj_etti/GetLife/resources/logo.png')
-        self.imagelabel = tk.Label(self.myframe, image=self.myimage, bg = "#7bd3ea")
-        self.imagelabel.grid(row=0, column=0, pady=50)
+        #create blank character for positioning
+        self.blank = tk.Label(self.canvas, text='', bg='#cf71ff')
+        self.blank.pack(pady = 125)
 
-        self.hi_there = tk.Button(self.myframe, text="Hello World\n(click me)", fg="blue", command=self.say_hi)
-        self.hi_there.grid(row=1, column=0, pady=10)
+
+        #create entry for username and password
+
+        self.username = tk.Label(self.canvas, text="Enter your username:", fg='white', bg = 'black')
+        self.username.pack()
         
-        self.quit = tk.Button(self.myframe, text="QUIT", fg="red", command=root.destroy)
-        self.quit.grid(row=2, column=0, pady=0)
+        e_username = tk.Entry(self.canvas)
+        e_username.pack()
 
-    def say_hi(self):
-        self.mylabel = tk.Label(self.myframe, text="I clicked!")
-        self.mylabel.grid(row=3, column=0, pady=10)
+        self.password = tk.Label(self.canvas, text="Enter your password:", fg='white', bg = 'black')
+        self.password.pack()
+        
+        e_password = tk.Entry(self.canvas, show="*")
+        e_password.pack()
+
+        #create button for login
+        
+        self.hi_there = tk.Button(self.canvas, text="Log In", padx=50, command=lambda: self.say_hi(e_username.get(), e_password.get()))
+        self.hi_there.pack(side="top", pady= 30)
+        
+        #create button for exit
+        self.quit = tk.Button(self.canvas, text="QUIT", padx=50, fg="red", command=root.destroy)
+        self.quit.pack()
+
+    def say_hi(self, name1, name2):
+        if name1 == 'denis' and name2 == '1234':
+            self.mylabel = tk.Label(self.canvas, text="Correct!")
+            self.mylabel.pack()
+        else:
+            self.mylabel = tk.Label(self.canvas, text="Incorrect!")
+            self.mylabel.pack()
         
 
 root = tk.Tk()
