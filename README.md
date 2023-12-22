@@ -1,5 +1,5 @@
 # GetLife
-
+![logo](https://github.com/WaffleDuffle/GetLife/blob/main/resources/logo.png)
 Develop an online scheduling system to allow patients to schedule hospital appointments through a `graphical user interface (GUI)` made using Tkinter library in Python. This project aims to streamline the scheduling process, facilitating access to medical services.
 
 ## Characteristics
