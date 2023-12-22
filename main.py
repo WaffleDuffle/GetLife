@@ -1,6 +1,8 @@
 import tkinter as tk
+import os
 from tkinter import PhotoImage
-from PIL import Image, ImageTk
+from dotenv import load_dotenv
+
 class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
@@ -50,14 +52,17 @@ class Application(tk.Frame):
         self.quit.pack()
 
     def say_hi(self, name1, name2):
-        if name1 == 'denis' and name2 == '1234':
+        load_dotenv()
+        print(os.getenv('NAME'))
+        print(os.getenv('PASSWORD'))
+        if name1 == os.getenv('NAME') and name2 == os.getenv('PASSWORD'):
             self.mylabel = tk.Label(self.canvas, text="Correct!")
             self.mylabel.pack()
         else:
             self.mylabel = tk.Label(self.canvas, text="Incorrect!")
             self.mylabel.pack()
         
-
+#main loop
 root = tk.Tk()
 app = Application(master=root)
 app.mainloop()
