@@ -21,7 +21,7 @@ Integrate a notification or alert system to inform users about upcoming tasks or
 ### 8. Search and Filter
 Add search and filter options to allow users to quickly find the tasks they want.
 
-## Before running
+## Run this commands before
 1. Go to your project directory
 2. Setup virtual environment: `pip3 install virtualenv`
 3. Name virtual environment: `virtualenv env`
