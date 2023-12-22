@@ -34,4 +34,5 @@ Add search and filter options to allow users to quickly find the tasks they want
 3. Name virtual environment: `virtualenv env`
 4. Open virtual environment: `source env/bin/activate`
 5. Install Tkinter (just in case): `sudo apt-get install python3-tk`
+6. Install dotenv: `pip install python-dotenv`
 
