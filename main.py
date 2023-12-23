@@ -53,8 +53,6 @@ class Application(tk.Frame):
 
     def say_hi(self, name1, name2):
         load_dotenv()
-        print(os.getenv('NAME'))
-        print(os.getenv('PASSWORD'))
         if name1 == os.getenv('NAME') and name2 == os.getenv('PASSWORD'):
             self.mylabel = tk.Label(self.canvas, text="Correct!")
             self.mylabel.pack()
