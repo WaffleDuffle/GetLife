@@ -1,32 +1,30 @@
 # GetLife
 ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ![logo](https://github.com/WaffleDuffle/GetLife/blob/main/resources/logo.png)
 
-Develop an online scheduling system to allow patients to schedule hospital appointments through a `graphical user interface (GUI)` made using Tkinter library in Python. This project aims to streamline the scheduling process, facilitating access to medical services.
+Dezvoltă un sistem de programare online care să permită pacienților să programeze consultații la spital printr-o `interfață grafică (GUI)` realizată cu ajutorul bibliotecii Tkinter în Python. Acest proiect urmărește să eficientizeze procesul de programare, facilitând pacienților accesul la serviciile medicale.
 
-## Characteristics
-### 1. Appealling GUI
-Develop a nice and intuitive GUI using Tkinter with options to add, edit and delete tasks.
+## Caracteristici
+### 1. Interfață Grafică Prietenoasă:
+Proiectează o interfață grafică intuitivă și atrăgătoare folosind Tkinter, asigurându-te că pacienții pot interacționa ușor cu sistemul.
 
-### 2. Simple Addition of Tasks
-It provides a quick and easy option for adding new tasks, including features such as description and due date.
+### 2. Profiluri de Doctori:
+Creeze profile pentru fiecare medic, afișând informații precum nume, specialitate, disponibilitate și detalii de contact.
 
-### 3. View Task List
-It displays a clear and orderly list of tasks, providing information such as title, description and current status.
+### 3. Programare de Consultații:
+Implementează un sistem care permite pacienților să programeze consultații, selectând data și intervalul orar preferat din opțiunile disponibile.
 
-### 4. Update and Edit
-Allows users to edit existing task information, including changing the description, due date, and status.
+### 4. Înregistrare Pacienți:
+Include un sistem de înregistrare a pacienților în care aceștia pot crea conturi, furnizând detalii precum nume, informații de contact și eventuale antecedente medicale.
 
-### 5. Delete and Confirm
-Includes an option to delete tasks with a confirmation to prevent accidental deletions.
+### 5. Confirmare Programare:
+Trimite notificări de confirmare atât pacienților, cât și medicilor, odată ce programarea a fost efectuată cu succes, includând detalii precum dată, oră și locație.
 
-### 6. Status Marking
-It implements a functionality to mark the status of tasks (completed/not completed), facilitating the monitoring of progress.
+### 6. Notificări de Remindere:
+Integrează un sistem de notificări care să amintească pacienților despre consultațiile iminente, reducând riscul absențelor neanunțate.
 
-### 7. Notifications and Alerts
-Integrate a notification or alert system to inform users about upcoming tasks or missed deadlines.
+### 7. Anulare și Replanificare:
+Permite pacienților să anuleze sau să reprogrammeze consultațiile într-un interval specific de timp, actualizând programul atât pentru pacienți, cât și pentru medici.
 
-### 8. Search and Filter
-Add search and filter options to allow users to quickly find the tasks they want.
 
 ## Run this commands before
 1. Go to your project directory
