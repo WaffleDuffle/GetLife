@@ -5,9 +5,7 @@ import mysql.connector
 from tkinter import PhotoImage
 from dotenv import load_dotenv
 
-conn = mysql.connector.connect(host='localhost', password='MySQL1234', user='root', database='MyDB')
-if conn.is_connected():
-    print('Connection established...')
+
 
 class Application(tk.Frame):
     def __init__(self, master=None):
@@ -74,7 +72,7 @@ class Application(tk.Frame):
         self.blank2.pack(pady = 150)
 
         #Show Doctors
-        self.print_doctors = tk.Button(self.canvas, text="Doctors", padx=50, pady=10, command=lambda: print('ok doctor!'))
+        self.print_doctors = tk.Button(self.canvas, text="Doctors", padx=50, pady=10, command=lambda: self.doctors_menu())
         self.print_doctors.pack(side="top", pady= 15)
 
         #Scheduling button
@@ -90,6 +88,12 @@ class Application(tk.Frame):
         self.log_out.pack(side='bottom')
 
 
+    def doctors_menu(self):
+        self.db_cursor = conn.cursor() 
+        self.db_cursor.execute("SHOW DATABASES")
+        for db in self.db_cursor:
+            print(db)
+
     def refresh(self, background_name):
         #delete widgets
         for widget in self.canvas.winfo_children():
@@ -104,5 +108,9 @@ class Application(tk.Frame):
 #main loop
 if __name__ == '__main__':
     root = tk.Tk()
+    conn = mysql.connector.connect(host='localhost', password='MySQL1234', user='root', database='MyDB')
+
+    if conn.is_connected():
+        print('Connection established...')
     app = Application(master=root)
     app.mainloop()
