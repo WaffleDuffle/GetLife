@@ -117,7 +117,7 @@ if __name__ == '__main__':
         database='MyDB'
     )
 
-    if conn.is_connected():
-        print('Connection established...')
-    app = Application(master=root)
-    app.mainloop()
+if conn.is_connected():
+    print('Connection established...')
+app = Application(master=root)
+app.mainloop()
