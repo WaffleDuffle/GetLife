@@ -90,9 +90,11 @@ class Application(tk.Frame):
 
     def doctors_menu(self):
         self.db_cursor = conn.cursor() 
-        self.db_cursor.execute("SHOW DATABASES")
-        for db in self.db_cursor:
-            print(db)
+        self.db_cursor.execute("SELECT * FROM Medici")
+        self.db_result = self.db_cursor.fetchall()
+        for i in range(len(self.db_result)):
+            for element in self.db_result[i]:
+                print(element)
 
     def refresh(self, background_name):
         #delete widgets
@@ -108,7 +110,12 @@ class Application(tk.Frame):
 #main loop
 if __name__ == '__main__':
     root = tk.Tk()
-    conn = mysql.connector.connect(host='localhost', password='MySQL1234', user='root', database='MyDB')
+    conn = mysql.connector.connect(
+        host='localhost',
+        password='MySQL1234', 
+        user='root', 
+        database='MyDB'
+    )
 
     if conn.is_connected():
         print('Connection established...')
