@@ -1,11 +1,13 @@
 import tkinter as tk
 import os
 import backgrounds as back
-
+import mysql.connector
 from tkinter import PhotoImage
 from dotenv import load_dotenv
 
-
+conn = mysql.connector.connect(host='localhost', password='MySQL1234', user='root', database='MyDB')
+if conn.is_connected():
+    print('Connection established...')
 
 class Application(tk.Frame):
     def __init__(self, master=None):
