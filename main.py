@@ -9,28 +9,28 @@ from PIL import Image, ImageTk
 class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
-        #name of the app
+    # name of the app
         self.master.title("GetLife")
 
-        #load canvas
+    # load canvas
         self.canvas = tk.Canvas(self.master, width=1000, height=700)
         self.canvas.pack_propagate(False)
 
-        #load login widgets
+    # load login widgets
         self.login()
         
 
     def login(self):
         
-        #refresh page
+    # refresh page
         self.refresh(back.bg_login_image_path)
-        #self.canvas.create_text(500, 700, anchor=tk.S,text='  Constantin Denis\nMoroiu Eric-Gabriel', fill='black')
+    # self.canvas.create_text(500, 700, anchor=tk.S,text='  Constantin Denis\nMoroiu Eric-Gabriel', fill='black')
     
-        #create blank character for positioning
+    # create blank character for positioning
         self.blank = tk.Label(self.canvas, text='', bg='#cf71ff')
         self.blank.pack(pady = 125)
 
-        #create entry for username and password
+    # create entry for username and password
         self.username = tk.Label(self.canvas, text="Enter your username:", fg='white', bg = 'black')
         self.username.pack()
         e_username = tk.Entry(self.canvas)
@@ -40,18 +40,18 @@ class Application(tk.Frame):
         e_password = tk.Entry(self.canvas, show="*")
         e_password.pack()
 
-        #create button for login
+    # create button for login
         self.check = tk.Button(self.canvas, text="Log In", padx=50, pady=10, command=lambda: self.check_cred(e_username.get(), e_password.get()))
         self.check.pack(side="top", pady= 30)
 
-        #exit button
+    # exit button
         self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=root.destroy)
         self.quit.pack(side='bottom', pady=30)
 
 
     def check_cred(self, name1, name2):
         load_dotenv()
-        #delete the previous text item if it exists, hasattr checks if given text exists before attempting to delete it
+    # delete the previous text item if it exists, hasattr checks if given text exists before attempting to delete it
         if hasattr(self.canvas, 'text') and self.canvas.text is not None:
             self.canvas.delete(self.canvas.text)
 
@@ -62,51 +62,51 @@ class Application(tk.Frame):
         
 
     def main_menu(self):
-        #refresh page
+    # refresh page
         self.refresh(back.bg_main_menu_image_path)
         
 
-        #blank character for positioning
+    # blank character for positioning
         self.blank2 = tk.Label(self.canvas, text='', bg='black')
         self.blank2.pack(pady = 150)
 
-        #show Doctors
+    # show Doctors
         self.print_doctors = tk.Button(self.canvas, text="Doctors", padx=50, pady=10, command=lambda: self.doctors_menu())
         self.print_doctors.pack(side="top", pady= 15)
 
-        #scheduling button
+    # scheduling button
         self.schedule_button = tk.Button(self.canvas, text="Schedule a meeting", padx=50, pady=10, command=lambda: print('ok meeting!'))
         self.schedule_button.pack(pady= 15)
 
-        #exit button
+    # exit button
         self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=root.destroy)
         self.quit.pack(side='bottom', pady=15)
 
-        #logout button
+    # logout button
         self.log_out = tk.Button(self.canvas, text='Log Out', command=lambda:self.login())
         self.log_out.pack(side='bottom')
 
 
     def doctors_menu(self):
-        #refresh page
+    # refresh page
         self.refresh(back.bg_doc_menu_image_path)
         
-        #initialize cursor in database
+    # initialize cursor in database
         self.db_cursor = conn.cursor() 
         self.db_cursor.execute("SELECT * FROM Medici")
         self.db_result = self.db_cursor.fetchall()
         self.i = 0
         
 
-        #buttons for crossing 
+    # buttons for crossing 
         self.next_button = tk.Button(self.canvas, padx = 28, text='Next', command=lambda: self.next_doc()).pack(side=tk.RIGHT, anchor=tk.CENTER, padx=20)
         self.previous_button = tk.Button(self.canvas, text='Previous', command=lambda: self.previous_doc()).pack(side=tk.LEFT,padx=20)
         
-        #return button
+    # return button
         self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.main_menu())
         self.ret.pack(side='bottom', pady=30)
 
-        #print first medic
+    # print first medic
         self.print_medici()
 
     def next_doc(self):
@@ -127,53 +127,46 @@ class Application(tk.Frame):
         
         
     def print_medici(self):
-        #checks if image_label has been defined already
+    # checks if image_label has been defined already
         if hasattr(self, 'image_label'):
             self.image_label.pack_forget()
-            self.medic_ID.pack_forget()
-            self.medic_nume.pack_forget()
-            self.medic_specialitate.pack_forget()
-            self.medic_disponibilitate.pack_forget()
-            self.medic_contact.pack_forget()
+
+        # remove old labels from the list
+            for label in self.lista_date:
+                label.pack_forget()
 
         self.image_path = '/home/waffleduffle/Desktop/python_proj_etti/GetLife/resources/' + str(self.i) + '.png'
         self.image = Image.open(self.image_path)
         self.photo = ImageTk.PhotoImage(self.image)
 
-        #create label for image
+    # create labels for image
         self.image_label = tk.Label(self.canvas, image=self.photo)
         self.image_label.pack(pady=50)
 
-        #label for ID
-        self.medic_ID = tk.Label(self.canvas, text = 'ID: ' + str(self.db_result[self.i][0]))
-        self.medic_ID.pack(pady=5)
+    # label list for data
+        self.lista_date = []
+        self.lista_date.append(tk.Label(self.canvas, text='ID: ' + str(self.db_result[self.i][0])))
+        self.lista_date.append(tk.Label(self.canvas, text='Nume: ' + str(self.db_result[self.i][1])))
+        self.lista_date.append(tk.Label(self.canvas, text='Specialitate: ' + str(self.db_result[self.i][2])))
+        self.lista_date.append(tk.Label(self.canvas, text='Disponibilitate: ' + str(self.db_result[self.i][3])))
+        self.lista_date.append(tk.Label(self.canvas, text='Contact: ' + str(self.db_result[self.i][4])))
+    # label packing
+        for label in self.lista_date:
+            label.pack(pady=5)
         
-        #label for name
-        self.medic_nume = tk.Label(self.canvas, text = 'Nume: ' + str(self.db_result[self.i][1]))
-        self.medic_nume.pack(pady=5)
-
-        
-        self.medic_specialitate = tk.Label(self.canvas, text = 'Specialitate: ' + str(self.db_result[self.i][2]))
-        self.medic_specialitate.pack(pady=5)
-
-        self.medic_disponibilitate = tk.Label(self.canvas, text = 'Disponibilitate: ' + str(self.db_result[self.i][3]))
-        self.medic_disponibilitate.pack(pady=5)
-
-        self.medic_contact = tk.Label(self.canvas, text = 'Contact: ' + str(self.db_result[self.i][4]))
-        self.medic_contact.pack(pady=5)
 
 
     def refresh(self, background_name):
-        #delete widgets
+    # delete widgets
         for widget in self.canvas.winfo_children():
             widget.destroy()
-        #import background
+    # import background
         self.canvas.delete("all")
         self.bg_image = PhotoImage(file=background_name)
         self.canvas.pack()
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.bg_image)
 
-#main loop
+# main loop
         
 if __name__ == '__main__':
     root = tk.Tk()
