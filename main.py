@@ -81,20 +81,20 @@ class Application(tk.Frame):
     
     # create blank character for positioning
         self.blank = tk.Label(self.canvas, text='', bg='black')
-        self.blank.pack(pady = 60)
+        self.blank.pack(pady = 50)
 
     #create entry for data
-        
-        self.create_entry_register(self.canvas, "Enter your password:")
-        self.create_entry_register(self.canvas, "Confirm your password:")
-        self.create_entry_register(self.canvas, "Enter your username:")
-        self.create_entry_register(self.canvas, "Enter your ID:")
-        self.create_entry_register(self.canvas, "Enter your name:")
-        self.create_entry_register(self.canvas, "Enter your contact:")
-        self.create_entry_register(self.canvas, "Enter your medical history:")
+        self.register_list = []
+        self.create_entry_register("Enter your username:")
+        self.create_entry_register("Enter your password:")
+        self.create_entry_register("Enter your ID:")
+        self.create_entry_register("Enter your name:")
+        self.create_entry_register("Enter your surname:")
+        self.create_entry_register("Enter your contact:")
+        self.create_entry_register("Enter your medical history:")
 
-    # create button for login
-        self.sign = tk.Button(self.canvas, text="Sign Up", padx=50, pady=10, command=lambda:print('ok register!'))
+    # create button for register
+        self.sign = tk.Button(self.canvas, text="Sign Up", padx=50, pady=10, command=lambda:self.create_account())
         self.sign.pack(side="top", pady= 30)
 
     # exit button
@@ -105,16 +105,45 @@ class Application(tk.Frame):
         self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.first_page())
         self.ret.pack(side='bottom')
 
-    def create_entry_register(self, parent, label_text):
-        label = tk.Label(parent, text=label_text, fg='white', bg='black')
+    def create_account(self):
+        user_data = []
+
+        for entry_data in self.register_list:
+            user_data.append(entry_data.get())
+
+        self.db_cursor_pacienti = conn.cursor() 
+        try:
+            self.db_cursor_pacienti.execute('INSERT INTO Pacienti (PacientID, Nume, prenume, DetaliiContact, AntecedenteMedicale, parola, username) VALUES ('
+                                            + user_data[2] + ','
+                                            + "'" + user_data[3] + "'" + ','
+                                            + "'" + user_data[4] + "'" + ','
+                                            + "'" + user_data[5] + "'" + ','
+                                            + "'" + user_data[6] + "'" + ','
+                                            + "'" + user_data[1] + "'" + ','
+                                            + "'" + user_data[0] + "'" + ')')
+            conn.commit()
+            self.login()
+        except:
+            if hasattr(self.canvas, 'text'):
+                self.canvas.delete(self.canvas.text)    
+            self.canvas.text = self.canvas.create_text(500, 525, anchor=tk.S,text='Blank fiedls!', fill='red')
+        
+        
+
+    def create_entry_register(self, label_text):
+        label = tk.Label(self.canvas, text=label_text, fg='white', bg='black')
         label.pack()
-        entry = tk.Entry(parent)
+        if label_text == 'Enter your password:':
+            entry = tk.Entry(self.canvas, show='*')
+        else:
+            entry = tk.Entry(self.canvas)
         entry.pack()
+        self.register_list.append(entry)
         
     def check_cred(self, name1, name2):
         load_dotenv()
     # delete the previous text item if it exists, hasattr checks if given text exists before attempting to delete it
-        if hasattr(self.canvas, 'text') and self.canvas.text is not None:
+        if hasattr(self.canvas, 'text'):
             self.canvas.delete(self.canvas.text)
 
         if name1 == os.getenv('NAME') and name2 == os.getenv('PASSWORD'):
@@ -157,9 +186,9 @@ class Application(tk.Frame):
         self.refresh(back.bg_doc_menu_image_path)
         
     # initialize cursor in database
-        self.db_cursor = conn.cursor() 
-        self.db_cursor.execute("SELECT * FROM Medici")
-        self.db_result = self.db_cursor.fetchall()
+        self.db_cursor_medici = conn.cursor() 
+        self.db_cursor_medici.execute("SELECT * FROM Medici")
+        self.db_result = self.db_cursor_medici.fetchall()
         self.i = 0
         
 
@@ -200,7 +229,7 @@ class Application(tk.Frame):
             for label in self.lista_date:
                 label.pack_forget()
 
-        self.image_path = '/home/waffleduffle/Desktop/python_proj_etti/GetLife/resources/' + str(self.i) + '.png'
+        self.image_path = 'resources/' + str(self.i) + '.png'
         self.image = Image.open(self.image_path)
         self.photo = ImageTk.PhotoImage(self.image)
 
@@ -236,11 +265,11 @@ class Application(tk.Frame):
 if __name__ == '__main__':
     root = tk.Tk()
     conn = mysql.connector.connect(
-        host='localhost',
-	    password='MySQL1234',
-	    user='root',
-	    database='MyDB'
-    )    
+        host='16.171.166.64',
+        password='admin', 
+        user='admin', 
+        database='mossad'
+    )  
 
 if conn.is_connected():
     print('Connection established...')
