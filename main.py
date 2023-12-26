@@ -85,40 +85,13 @@ class Application(tk.Frame):
 
     #create entry for data
         
-        self.password_pacient = tk.Label(self.canvas, text="Enter your password:", fg='white', bg = 'black')
-        self.password_pacient.pack()
-        e_password_pacient = tk.Entry(self.canvas)
-        e_password_pacient.pack()
-
-        self.password_confirm = tk.Label(self.canvas, text="Confirm your password:", fg='white', bg = 'black')
-        self.password_confirm.pack()
-        e_password_confirm = tk.Entry(self.canvas)
-        e_password_confirm.pack()
-
-        self.username_pacient = tk.Label(self.canvas, text="Enter your username:", fg='white', bg = 'black')
-        self.username_pacient.pack()
-        e_username_pacient = tk.Entry(self.canvas)
-        e_username_pacient.pack()
-
-        self.ID_pacient = tk.Label(self.canvas, text="Enter your ID:", fg='white', bg = 'black')
-        self.ID_pacient.pack()
-        e_ID_pacient = tk.Entry(self.canvas)
-        e_ID_pacient.pack()
-
-        self.name_pacient = tk.Label(self.canvas, text="Enter your name:", fg='white', bg = 'black')
-        self.name_pacient.pack()
-        e_name_pacient = tk.Entry(self.canvas)
-        e_name_pacient.pack()
-        
-        self.contact_pacient = tk.Label(self.canvas, text="Enter your conatct:", fg='white', bg = 'black')
-        self.contact_pacient.pack()
-        e_contact_pacient = tk.Entry(self.canvas)
-        e_contact_pacient.pack()
-
-        self.problems_pacient = tk.Label(self.canvas, text="Enter your medical history:", fg='white', bg = 'black')
-        self.problems_pacient.pack()
-        e_problems_pacient = tk.Entry(self.canvas)
-        e_problems_pacient.pack()
+        self.create_entry_register(self.canvas, "Enter your password:")
+        self.create_entry_register(self.canvas, "Confirm your password:")
+        self.create_entry_register(self.canvas, "Enter your username:")
+        self.create_entry_register(self.canvas, "Enter your ID:")
+        self.create_entry_register(self.canvas, "Enter your name:")
+        self.create_entry_register(self.canvas, "Enter your contact:")
+        self.create_entry_register(self.canvas, "Enter your medical history:")
 
     # create button for login
         self.sign = tk.Button(self.canvas, text="Sign Up", padx=50, pady=10, command=lambda:print('ok register!'))
@@ -132,6 +105,12 @@ class Application(tk.Frame):
         self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.first_page())
         self.ret.pack(side='bottom')
 
+    def create_entry_register(self, parent, label_text):
+        label = tk.Label(parent, text=label_text, fg='white', bg='black')
+        label.pack()
+        entry = tk.Entry(parent)
+        entry.pack()
+        
     def check_cred(self, name1, name2):
         load_dotenv()
     # delete the previous text item if it exists, hasattr checks if given text exists before attempting to delete it
