@@ -2,6 +2,8 @@ import tkinter as tk
 import os
 import backgrounds as back
 import mysql.connector
+import time
+from plyer import notification
 from tkinter import PhotoImage
 from dotenv import load_dotenv
 from PIL import Image, ImageTk
@@ -9,6 +11,7 @@ from PIL import Image, ImageTk
 class Application(tk.Frame):
     def __init__(self, master=None):
         super().__init__(master)
+
     # name of the app
         self.master.title("GetLife")
 
@@ -16,19 +19,39 @@ class Application(tk.Frame):
         self.canvas = tk.Canvas(self.master, width=1000, height=700)
         self.canvas.pack_propagate(False)
 
-    # load login widgets
-        self.login()
+    # load witgets for first page
+        self.first_page()
         
+    
+    def first_page(self):
+    # refresh page
+        self.refresh(back.bg_login_image_path)
+
+    # create blank character for positioning
+        self.blank = tk.Label(self.canvas, text='', bg='#cf71ff')
+        self.blank.pack(pady = 155)
+
+    # load exit button
+        self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=root.destroy)
+        self.quit.pack(side='bottom', pady=30)
+
+    # load login widgets
+        self.login_button = tk.Button(self.canvas, text='Sign In', padx=50, pady=10, command=lambda:self.login())
+        self.login_button.pack(side='top')
+    
+    # load register widgets
+        self.register_button = tk.Button(self.canvas, text='Sign Up', padx=47, pady=10, command=lambda:self.sign_up())
+        self.register_button.pack(side='top', pady=30)
 
     def login(self):
         
     # refresh page
         self.refresh(back.bg_login_image_path)
     # self.canvas.create_text(500, 700, anchor=tk.S,text='  Constantin Denis\nMoroiu Eric-Gabriel', fill='black')
-    
+
     # create blank character for positioning
         self.blank = tk.Label(self.canvas, text='', bg='#cf71ff')
-        self.blank.pack(pady = 125)
+        self.blank.pack(pady = 132)
 
     # create entry for username and password
         self.username = tk.Label(self.canvas, text="Enter your username:", fg='white', bg = 'black')
@@ -48,6 +71,66 @@ class Application(tk.Frame):
         self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=root.destroy)
         self.quit.pack(side='bottom', pady=30)
 
+    # return button
+        self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.first_page())
+        self.ret.pack(side='bottom')
+
+    def sign_up(self):
+    # refresh page
+        self.refresh(back.bg_doc_menu_image_path)
+    
+    # create blank character for positioning
+        self.blank = tk.Label(self.canvas, text='', bg='black')
+        self.blank.pack(pady = 60)
+
+    #create entry for data
+        
+        self.password_pacient = tk.Label(self.canvas, text="Enter your password:", fg='white', bg = 'black')
+        self.password_pacient.pack()
+        e_password_pacient = tk.Entry(self.canvas)
+        e_password_pacient.pack()
+
+        self.password_confirm = tk.Label(self.canvas, text="Confirm your password:", fg='white', bg = 'black')
+        self.password_confirm.pack()
+        e_password_confirm = tk.Entry(self.canvas)
+        e_password_confirm.pack()
+
+        self.username_pacient = tk.Label(self.canvas, text="Enter your username:", fg='white', bg = 'black')
+        self.username_pacient.pack()
+        e_username_pacient = tk.Entry(self.canvas)
+        e_username_pacient.pack()
+
+        self.ID_pacient = tk.Label(self.canvas, text="Enter your ID:", fg='white', bg = 'black')
+        self.ID_pacient.pack()
+        e_ID_pacient = tk.Entry(self.canvas)
+        e_ID_pacient.pack()
+
+        self.name_pacient = tk.Label(self.canvas, text="Enter your name:", fg='white', bg = 'black')
+        self.name_pacient.pack()
+        e_name_pacient = tk.Entry(self.canvas)
+        e_name_pacient.pack()
+        
+        self.contact_pacient = tk.Label(self.canvas, text="Enter your conatct:", fg='white', bg = 'black')
+        self.contact_pacient.pack()
+        e_contact_pacient = tk.Entry(self.canvas)
+        e_contact_pacient.pack()
+
+        self.problems_pacient = tk.Label(self.canvas, text="Enter your medical history:", fg='white', bg = 'black')
+        self.problems_pacient.pack()
+        e_problems_pacient = tk.Entry(self.canvas)
+        e_problems_pacient.pack()
+
+    # create button for login
+        self.sign = tk.Button(self.canvas, text="Sign Up", padx=50, pady=10, command=lambda:print('ok register!'))
+        self.sign.pack(side="top", pady= 30)
+
+    # exit button
+        self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=root.destroy)
+        self.quit.pack(side='bottom', pady=30)
+    
+    # return button
+        self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.first_page())
+        self.ret.pack(side='bottom')
 
     def check_cred(self, name1, name2):
         load_dotenv()
@@ -56,19 +139,22 @@ class Application(tk.Frame):
             self.canvas.delete(self.canvas.text)
 
         if name1 == os.getenv('NAME') and name2 == os.getenv('PASSWORD'):
+            self.account_name = 'admin'
             self.main_menu()
         else:
-            self.canvas.text = self.canvas.create_text(500, 455, anchor=tk.S,text='Incorrect credentials!', fill='white')
+            self.canvas.text = self.canvas.create_text(500, 465, anchor=tk.S,text='Incorrect credentials!', fill='white')
         
 
     def main_menu(self):
     # refresh page
         self.refresh(back.bg_main_menu_image_path)
         
+    # show what account is logged in
+        self.canvas.account_text = self.canvas.create_text(5, 695, anchor=tk.SW,text='Logged in as: ' + self.account_name, font=12)
 
     # blank character for positioning
         self.blank2 = tk.Label(self.canvas, text='', bg='black')
-        self.blank2.pack(pady = 150)
+        self.blank2.pack(pady = 132)
 
     # show Doctors
         self.print_doctors = tk.Button(self.canvas, text="Doctors", padx=50, pady=10, command=lambda: self.doctors_menu())
@@ -80,7 +166,7 @@ class Application(tk.Frame):
 
     # exit button
         self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=root.destroy)
-        self.quit.pack(side='bottom', pady=15)
+        self.quit.pack(side='bottom', pady=30)
 
     # logout button
         self.log_out = tk.Button(self.canvas, text='Log Out', command=lambda:self.login())
@@ -145,11 +231,11 @@ class Application(tk.Frame):
 
     # label list for data
         self.lista_date = []
-        self.lista_date.append(tk.Label(self.canvas, text='ID: ' + str(self.db_result[self.i][0])))
-        self.lista_date.append(tk.Label(self.canvas, text='Nume: ' + str(self.db_result[self.i][1])))
-        self.lista_date.append(tk.Label(self.canvas, text='Specialitate: ' + str(self.db_result[self.i][2])))
-        self.lista_date.append(tk.Label(self.canvas, text='Disponibilitate: ' + str(self.db_result[self.i][3])))
-        self.lista_date.append(tk.Label(self.canvas, text='Contact: ' + str(self.db_result[self.i][4])))
+        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='ID: ' + str(self.db_result[self.i][0])))
+        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Nume: ' + str(self.db_result[self.i][1])))
+        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Specialitate: ' + str(self.db_result[self.i][2])))
+        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Disponibilitate: ' + str(self.db_result[self.i][3])))
+        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Contact: ' + str(self.db_result[self.i][4])))
     # label packing
         for label in self.lista_date:
             label.pack(pady=5)
@@ -172,12 +258,13 @@ if __name__ == '__main__':
     root = tk.Tk()
     conn = mysql.connector.connect(
         host='localhost',
-	password='MySQL1234',
-	user='root',
-	database='MyDB'
+	    password='MySQL1234',
+	    user='root',
+	    database='MyDB'
     )    
 
 if conn.is_connected():
     print('Connection established...')
+
 app = Application(master=root)
 app.mainloop()
