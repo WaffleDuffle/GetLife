@@ -44,7 +44,8 @@ class Application(tk.Frame):
         self.register_button.pack(side='top', pady=30)
 
     def login(self):
-        
+    # define cursor for pacienti table
+        self.db_cursor_pacienti = conn.cursor()
     # refresh page
         self.refresh(back.bg_login_image_path)
     # self.canvas.create_text(500, 700, anchor=tk.S,text='  Constantin Denis\nMoroiu Eric-Gabriel', fill='black')
@@ -74,6 +75,26 @@ class Application(tk.Frame):
     # return button
         self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.first_page())
         self.ret.pack(side='bottom')
+
+
+    def check_cred(self, name1, name2):
+        load_dotenv()
+    # delete the previous text item if it exists, hasattr checks if given text exists before attempting to delete it
+        if hasattr(self.canvas, 'text'):
+            self.canvas.delete(self.canvas.text)
+        
+        
+        self.db_cursor_pacienti.execute("SELECT * FROM Pacienti WHERE username = %s AND parola = %s", (name1, name2))
+    
+    # fetch coresponding row, if it exists 
+        result = self.db_cursor_pacienti.fetchone()
+        
+        if name1 == os.getenv('NAME') and name2 == os.getenv('PASSWORD'):
+            self.main_menu('admin')
+        elif result:
+            self.main_menu(result[6]) # username column
+        else:
+            self.canvas.text = self.canvas.create_text(500, 465, anchor=tk.S,text='Incorrect credentials!', fill='white')
 
     def sign_up(self):
     # refresh page
@@ -111,7 +132,7 @@ class Application(tk.Frame):
         for entry_data in self.register_list:
             user_data.append(entry_data.get())
 
-        self.db_cursor_pacienti = conn.cursor() 
+         
         try:
             self.db_cursor_pacienti.execute('INSERT INTO Pacienti (PacientID, Nume, prenume, DetaliiContact, AntecedenteMedicale, parola, username) VALUES ('
                                             + user_data[2] + ','
@@ -120,7 +141,7 @@ class Application(tk.Frame):
                                             + "'" + user_data[5] + "'" + ','
                                             + "'" + user_data[6] + "'" + ','
                                             + "'" + user_data[1] + "'" + ','
-                                            + "'" + user_data[0] + "'" + ')')
+                                            + "'" + user_data[0] + "'" + ')') # register widgets order doesn't corespond to database columns orders, I know
             conn.commit()
             self.login()
         except:
@@ -131,6 +152,7 @@ class Application(tk.Frame):
         
 
     def create_entry_register(self, label_text):
+        
         label = tk.Label(self.canvas, text=label_text, fg='white', bg='black')
         label.pack()
         if label_text == 'Enter your password:':
@@ -140,25 +162,13 @@ class Application(tk.Frame):
         entry.pack()
         self.register_list.append(entry)
         
-    def check_cred(self, name1, name2):
-        load_dotenv()
-    # delete the previous text item if it exists, hasattr checks if given text exists before attempting to delete it
-        if hasattr(self.canvas, 'text'):
-            self.canvas.delete(self.canvas.text)
 
-        if name1 == os.getenv('NAME') and name2 == os.getenv('PASSWORD'):
-            self.account_name = 'admin'
-            self.main_menu()
-        else:
-            self.canvas.text = self.canvas.create_text(500, 465, anchor=tk.S,text='Incorrect credentials!', fill='white')
-        
-
-    def main_menu(self):
+    def main_menu(self, account_name):
     # refresh page
         self.refresh(back.bg_main_menu_image_path)
         
     # show what account is logged in
-        self.canvas.account_text = self.canvas.create_text(5, 695, anchor=tk.SW,text='Logged in as: ' + self.account_name, font=12)
+        self.canvas.account_text = self.canvas.create_text(5, 695, anchor=tk.SW,text='Logged in as: ' + account_name, font=12)
 
     # blank character for positioning
         self.blank2 = tk.Label(self.canvas, text='', bg='black')
@@ -265,10 +275,10 @@ class Application(tk.Frame):
 if __name__ == '__main__':
     root = tk.Tk()
     conn = mysql.connector.connect(
-        host='16.171.166.64',
-        password='admin', 
-        user='admin', 
-        database='mossad'
+        host='localhost',
+        password='MySQL1234', 
+        user='root', 
+        database='MyDB'
     )  
 
 if conn.is_connected():
