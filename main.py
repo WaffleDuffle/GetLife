@@ -29,6 +29,7 @@ class Application(tk.Frame):
     # define cursor for pacienti and medici tables
         self.db_cursor_pacienti = conn.cursor()
         self.db_cursor_medici = conn.cursor()
+        self.db_cursor_programari = conn.cursor()
 
     # refresh page
         self.refresh(back.bg_login_image_path)
@@ -85,29 +86,33 @@ class Application(tk.Frame):
     def check_cred(self, name1, name2):
         load_dotenv()
     # delete the previous text item if it exists, hasattr checks if given text exists before attempting to delete it
-        if hasattr(self.canvas, 'text'):
+        if hasattr(self.canvas, 'text') and self.canvas.text is not None:
             self.canvas.delete(self.canvas.text)
         
         ok = 0
 
         if name1 == os.getenv('NAME') and name2 == os.getenv('PASSWORD'):
             self.main_menu('admin')
+        else:
             ok += 1
 
         self.db_cursor_pacienti.execute("SELECT * FROM Pacienti WHERE Username = %s AND Parola = %s", (name1, name2))
         self.result_pacienti = self.db_cursor_pacienti.fetchone()
         if self.result_pacienti:
             self.main_menu(self.result_pacienti[6]) # username column for pacienti
+        else:
             ok += 1
 
         self.db_cursor_medici.execute("SELECT * FROM Medici WHERE Username = %s AND Parola = %s", (name1, name2))
         self.result_medici = self.db_cursor_medici.fetchone()
         if self.result_medici:
             self.main_menu('Dr. ' + self.result_medici[1]) #name column for medici
+        else:
             ok += 1
         
         if ok == 3:
             self.canvas.text = self.canvas.create_text(500, 465, anchor=tk.S,text='Incorrect credentials!', fill='white')
+            
 
     def sign_up(self):
     # refresh page
@@ -178,6 +183,7 @@ class Application(tk.Frame):
         
 
     def main_menu(self, account_name):
+        
     # refresh page
         self.refresh(back.bg_main_menu_image_path)
         
@@ -272,7 +278,7 @@ class Application(tk.Frame):
     # label list for data
         self.lista_date = []
         self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='ID: ' + str(self.db_result[self.i][0])))
-        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Nume: Dr. ' + str(self.db_result[self.i][1])))
+        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Nume: ' + str(self.db_result[self.i][1])))
         self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Specialitate: ' + str(self.db_result[self.i][2])))
         self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Disponibilitate: ' + str(self.db_result[self.i][3])))
         self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Contact: ' + str(self.db_result[self.i][4])))
@@ -291,8 +297,10 @@ class Application(tk.Frame):
         self.bg_image = PhotoImage(file=background_name)
         self.canvas.pack()
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.bg_image)
+        
 
     def meeting_scheduling(self, account_name):
+        
     # refresh page
         self.refresh(back.bg_doc_menu_image_path)
 
@@ -315,7 +323,7 @@ class Application(tk.Frame):
         self.result_medici = self.db_cursor_medici.fetchall()
         medici_list = []
         for element in self.result_medici:
-            medici_list.append('Dr. ' + element[1])
+            medici_list.append(element[1])
     
     # label for date
         self.date_label = tk.Label(self.canvas, text='Select a date:', bg='black', fg='white')
@@ -323,6 +331,7 @@ class Application(tk.Frame):
     # calendar    
         self.date_calendar = Calendar(self.canvas, selectmode='day', date_pattern='yyyy-mm-dd')
         self.date_calendar.pack(pady=5)
+        
 
     # label for doc choosing
         self.doc_label = tk.Label(self.canvas, text='Select a Doctor', bg='black', fg='white')
@@ -330,9 +339,11 @@ class Application(tk.Frame):
     # combobox for doc list
         self.doc_combobox = ttk.Combobox(self.canvas, values=medici_list, width=21)
         self.doc_combobox.pack(pady=5)
+        
 
         time_list = ['08:00-09:00','09:00-10:00','10:00-11:00','11:00-12:00','12:00-13:00',
                      '13:00-14:00','14:00-15:00','15:00-16:00','16:00-17:00','17:00-18:00']
+        
         
     # label for time
         self.time_label = tk.Label(self.canvas, text='Select a time:', bg='black', fg='white')
@@ -340,11 +351,13 @@ class Application(tk.Frame):
     # combobox for time
         self.time_combobox = ttk.Combobox(self.canvas, values=time_list, width=10)
         self.time_combobox.pack(pady=5)
+        
 
         location_list = ['Spitalul Clinic de Urgență pentru Copii „Grigore Alexandrescu”',
                          'Spitalul Clinic de Urgență București',
                          'Spitalul Universitar de Urgență București',
                          'Institutul Clinic Fundeni']
+        
     # label for hospitals
         self.location_label = tk.Label(self.canvas, text='Select a location:', bg='black', fg='white')
         self.location_label.pack()
@@ -352,10 +365,48 @@ class Application(tk.Frame):
         self.location_combobox = ttk.Combobox(self.canvas, values=location_list, width=51)
         self.location_combobox.pack(pady=5)
         
+
     # schedule button
-        self.schedule = tk.Button(self.canvas, padx=50, pady=10, text='Schedule')
+        self.schedule = tk.Button(self.canvas, padx=50, pady=10, text='Schedule', command=lambda:self.create_schedule(account_name))
         self.schedule.pack(pady=15)
     
+    def create_schedule(self, account_name):
+        scheduling_list = []
+        try:
+            # Fetch PacientID for the given account_name
+            self.db_cursor_programari.execute('SELECT PacientID FROM Pacienti WHERE Username = %s', (account_name,))
+            pacient_id_result = self.db_cursor_programari.fetchone()
+            
+        # 0 - Rejected   1 - Awaiting response   2 - Accepted
+            if pacient_id_result:
+                self.db_cursor_programari.execute('SELECT MedicID FROM Medici WHERE Nume = %s', (self.doc_combobox.get(),))
+                pacient_id = pacient_id_result[0]
+                medic_id = self.db_cursor_programari.fetchone()[0]
+                scheduling_list.append(pacient_id)
+                scheduling_list.append(medic_id)
+                scheduling_list.append(self.date_calendar.get_date())
+                scheduling_list.append(self.time_combobox.get()[0:5])
+                scheduling_list.append(self.time_combobox.get()[6:11])
+                scheduling_list.append(self.location_combobox.get())
+                scheduling_list.append(1)
+                print(scheduling_list)
+                query = 'INSERT INTO Programari (PacientID, MedicID, DataProgramare, OraInceput, OraSfarsit, Locatie, Confirmare) VALUES (%s, %s, %s, %s, %s, %s, %s)'
+                self.db_cursor_programari.execute(query, (
+                    str(scheduling_list[0]),
+                    str(scheduling_list[1]),
+                    scheduling_list[2],
+                    scheduling_list[3],
+                    scheduling_list[4],
+                    scheduling_list[5],
+                    str(scheduling_list[6])
+                    ))
+                conn.commit()
+            else:
+                print("No PacientID found for %s", (account_name,))
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            self.db_cursor_programari.close()
 
 # main loop
         
