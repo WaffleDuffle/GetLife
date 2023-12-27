@@ -141,7 +141,7 @@ class Application(tk.Frame):
                                             + "'" + user_data[5] + "'" + ','
                                             + "'" + user_data[6] + "'" + ','
                                             + "'" + user_data[1] + "'" + ','
-                                            + "'" + user_data[0] + "'" + ')') # register widgets order doesn't corespond to database columns orders, I know
+                                            + "'" + user_data[0] + "'" + ')') # register widgets order doesn't correspond to database columns orders, I know
             conn.commit()
             self.login()
         except:
@@ -152,7 +152,7 @@ class Application(tk.Frame):
         
 
     def create_entry_register(self, label_text):
-        
+
         label = tk.Label(self.canvas, text=label_text, fg='white', bg='black')
         label.pack()
         if label_text == 'Enter your password:':

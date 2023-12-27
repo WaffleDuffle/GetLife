@@ -33,4 +33,7 @@ Permite pacienților să anuleze sau să reprogrammeze consultațiile într-un i
 4. Open virtual environment: `source env/bin/activate`
 5. Install Tkinter (just in case): `sudo apt-get install python3-tk`
 6. Install dotenv: `pip install python-dotenv`
+8. Install plyer: `pip install plyer`
+9. Install lidbus: `sudo apt-get install libdbus-glib-1-dev libdbus-1-dev`
+10. Install dbus: `pip install dbus-python`
 
