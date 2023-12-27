@@ -92,21 +92,21 @@ class Application(tk.Frame):
         ok = 0
 
         if name1 == os.getenv('NAME') and name2 == os.getenv('PASSWORD'):
-            self.main_menu('admin')
+            self.main_menu('admin', 1)
         else:
             ok += 1
 
         self.db_cursor_pacienti.execute("SELECT * FROM Pacienti WHERE Username = %s AND Parola = %s", (name1, name2))
         self.result_pacienti = self.db_cursor_pacienti.fetchone()
         if self.result_pacienti:
-            self.main_menu(self.result_pacienti[6]) # username column for pacienti
+            self.main_menu(self.result_pacienti[6], 1) # username column for pacienti
         else:
             ok += 1
 
         self.db_cursor_medici.execute("SELECT * FROM Medici WHERE Username = %s AND Parola = %s", (name1, name2))
         self.result_medici = self.db_cursor_medici.fetchone()
         if self.result_medici:
-            self.main_menu('Dr. ' + self.result_medici[1]) #name column for medici
+            self.main_menu(self.result_medici[1], 0) #name column for medici
         else:
             ok += 1
         
@@ -169,6 +169,7 @@ class Application(tk.Frame):
             self.canvas.text = self.canvas.create_text(500, 525, anchor=tk.S,text='Blank fiedls or already used ID', fill='red')
         
         
+        
 
     def create_entry_register(self, label_text):
 
@@ -182,7 +183,7 @@ class Application(tk.Frame):
         self.register_list.append(entry)
         
 
-    def main_menu(self, account_name):
+    def main_menu(self, account_name, ok):
         
     # refresh page
         self.refresh(back.bg_main_menu_image_path)
@@ -195,15 +196,16 @@ class Application(tk.Frame):
         self.blank2.pack(pady = 132)
 
     # show Doctors
-        self.print_doctors = tk.Button(self.canvas, text="Doctors", padx=50, pady=10, command=lambda: self.doctors_menu(account_name))
+        self.print_doctors = tk.Button(self.canvas, text="Doctors", padx=50, pady=10, command=lambda: self.doctors_menu(account_name, ok))
         self.print_doctors.pack(side="top", pady= 15)
 
-    # scheduling button
-        self.schedule_button = tk.Button(self.canvas, text="Schedule a meeting", padx=50, pady=10, command=lambda: self.meeting_scheduling(account_name))
-        self.schedule_button.pack(pady= 15)
+        if ok == 1:
+        # scheduling button
+            self.schedule_button = tk.Button(self.canvas, text="Schedule a meeting", padx=50, pady=10, command=lambda: self.meeting_scheduling(account_name))
+            self.schedule_button.pack(pady= 15)
 
     #refresh button
-        self.refresh_button = tk.Button(self.canvas, text="Refresh", command=lambda:self.main_menu(account_name))
+        self.refresh_button = tk.Button(self.canvas, text="Refresh", command=lambda:self.main_menu(account_name, ok))
         self.refresh_button.pack(side='bottom', anchor='se')    
 
     # exit button
@@ -217,7 +219,7 @@ class Application(tk.Frame):
         self.log_out.pack(side='bottom')
 
 
-    def doctors_menu(self, account_name):
+    def doctors_menu(self, account_name, ok):
     # refresh page
         self.refresh(back.bg_doc_menu_image_path)
         
@@ -236,7 +238,7 @@ class Application(tk.Frame):
         self.previous_button = tk.Button(self.canvas, text='Previous', command=lambda: self.previous_doc()).pack(side=tk.LEFT,padx=20)
 
     # return button
-        self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.main_menu(account_name))
+        self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.main_menu(account_name, ok))
         self.ret.pack(side='bottom', pady=30)
 
     # print first medic
@@ -316,7 +318,7 @@ class Application(tk.Frame):
         self.refresh_button.pack(side='bottom', anchor='se')
 
     # return button
-        self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.main_menu(account_name))
+        self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.main_menu(account_name, 1))
         self.ret.pack(side='bottom', pady=30)
 
         self.db_cursor_medici.execute("SELECT * FROM Medici")
@@ -400,13 +402,16 @@ class Application(tk.Frame):
                     scheduling_list[5],
                     str(scheduling_list[6])
                     ))
+                
+                query = 'UPDATE Medici SET NumarProgramari = NumarProgramari + 1 WHERE MedicID = %s'
+                self.db_cursor_programari.execute(query, (str(scheduling_list[1]),))
                 conn.commit()
             else:
                 print("No PacientID found for %s", (account_name,))
         except Exception as e:
             print(f"Error: {e}")
         finally:
-            self.db_cursor_programari.close()
+            self.main_menu(account_name, 1)
 
 # main loop
         
