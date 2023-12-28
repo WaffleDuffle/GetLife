@@ -425,11 +425,12 @@ class Application(tk.Frame):
         
 if __name__ == '__main__':
     root = tk.Tk()
+    load_dotenv()
     conn = mysql.connector.connect(
-        host='16.171.166.64',
-        password='admin', 
-        user='admin', 
-        database='mossad'
+        host = os.getenv('HOST'),
+        password = os.getenv('DB_PASSWORD'), 
+        user = os.getenv('DB_USER'), 
+        database = os.getenv('DATABASE')
     )
 
 if conn.is_connected():
