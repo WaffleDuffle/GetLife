@@ -111,7 +111,7 @@ class Application(tk.Frame):
             ok += 1
         
         if ok == 3:
-            self.canvas.text = self.canvas.create_text(500, 465, anchor=tk.S,text='Incorrect credentials!', fill='white')
+            self.canvas.text = self.canvas.create_text(500, 465, anchor=tk.S,text='Incorrect credentials!', fill='red')
             
 
     def sign_up(self):
@@ -183,7 +183,7 @@ class Application(tk.Frame):
         self.register_list.append(entry)
         
 
-    def main_menu(self, account_name, ok):
+    def main_menu(self, account_name, guest_type):
         
     # refresh page
         self.refresh(back.bg_main_menu_image_path)
@@ -196,16 +196,16 @@ class Application(tk.Frame):
         self.blank2.pack(pady = 132)
 
     # show Doctors
-        self.print_doctors = tk.Button(self.canvas, text="Doctors", padx=50, pady=10, command=lambda: self.doctors_menu(account_name, ok))
+        self.print_doctors = tk.Button(self.canvas, text="Doctors", padx=50, pady=10, command=lambda: self.doctors_menu(account_name, guest_type))
         self.print_doctors.pack(side="top", pady= 15)
 
-        if ok == 1:
+        if guest_type == 1:
         # scheduling button
             self.schedule_button = tk.Button(self.canvas, text="Schedule a meeting", padx=50, pady=10, command=lambda: self.meeting_scheduling(account_name))
             self.schedule_button.pack(pady= 15)
 
     #refresh button
-        self.refresh_button = tk.Button(self.canvas, text="Refresh", command=lambda:self.main_menu(account_name, ok))
+        self.refresh_button = tk.Button(self.canvas, text="Refresh", command=lambda:self.main_menu(account_name, guest_type))
         self.refresh_button.pack(side='bottom', anchor='se')    
 
     # exit button
@@ -219,7 +219,7 @@ class Application(tk.Frame):
         self.log_out.pack(side='bottom')
 
 
-    def doctors_menu(self, account_name, ok):
+    def doctors_menu(self, account_name, guest_type):
     # refresh page
         self.refresh(back.bg_doc_menu_image_path)
         
@@ -238,7 +238,7 @@ class Application(tk.Frame):
         self.previous_button = tk.Button(self.canvas, text='Previous', command=lambda: self.previous_doc()).pack(side=tk.LEFT,padx=20)
 
     # return button
-        self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.main_menu(account_name, ok))
+        self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.main_menu(account_name, guest_type))
         self.ret.pack(side='bottom', pady=30)
 
     # print first medic
@@ -373,13 +373,15 @@ class Application(tk.Frame):
         self.schedule.pack(pady=15)
     
     def create_schedule(self, account_name):
+        if hasattr(self.canvas, 'text') and self.canvas.text is not None:
+            self.canvas.delete(self.canvas.text)
         scheduling_list = []
         try:
             # Fetch PacientID for the given account_name
             self.db_cursor_programari.execute('SELECT PacientID FROM Pacienti WHERE Username = %s', (account_name,))
             pacient_id_result = self.db_cursor_programari.fetchone()
             
-        # 0 - Rejected   1 - Awaiting response   2 - Accepted
+        
             if pacient_id_result:
                 self.db_cursor_programari.execute('SELECT MedicID FROM Medici WHERE Nume = %s', (self.doc_combobox.get(),))
                 pacient_id = pacient_id_result[0]
@@ -390,28 +392,34 @@ class Application(tk.Frame):
                 scheduling_list.append(self.time_combobox.get()[0:5])
                 scheduling_list.append(self.time_combobox.get()[6:11])
                 scheduling_list.append(self.location_combobox.get())
-                scheduling_list.append(1)
+                scheduling_list.append(1) # 0 - Rejected   1 - Awaiting response   2 - Accepted
                 print(scheduling_list)
-                query = 'INSERT INTO Programari (PacientID, MedicID, DataProgramare, OraInceput, OraSfarsit, Locatie, Confirmare) VALUES (%s, %s, %s, %s, %s, %s, %s)'
+                query = 'INSERT INTO Programari (PacientID, MedicID, DataProgramare, OraInceput, OraSfarsit, UniqueKey, Locatie, Confirmare) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'
                 self.db_cursor_programari.execute(query, (
-                    str(scheduling_list[0]),
-                    str(scheduling_list[1]),
-                    scheduling_list[2],
-                    scheduling_list[3],
-                    scheduling_list[4],
-                    scheduling_list[5],
-                    str(scheduling_list[6])
-                    ))
+                    str(scheduling_list[0]),                                                                      #PacientID
+                    str(scheduling_list[1]),                                                                      #MedicID
+                    scheduling_list[2],                                                                           #DataProgramare
+                    scheduling_list[3],                                                                           #OraInceput
+                    scheduling_list[4],                                                                           #OraSfarsit
+                    str(scheduling_list[1]) + scheduling_list[2] + scheduling_list[3] + scheduling_list[4],       #UniqueKey
+                    scheduling_list[5],                                                                           #Locatie
+                    str(scheduling_list[6])                                                                       #Confirmare
+                    ))                                                  
                 
                 query = 'UPDATE Medici SET NumarProgramari = NumarProgramari + 1 WHERE MedicID = %s'
                 self.db_cursor_programari.execute(query, (str(scheduling_list[1]),))
                 conn.commit()
+                self.main_menu(account_name, 1)
             else:
                 print("No PacientID found for %s", (account_name,))
         except Exception as e:
-            print(f"Error: {e}")
-        finally:
-            self.main_menu(account_name, 1)
+            self.canvas.text = self.canvas.create_text(500, 560, anchor=tk.S,text='Slot Already Taken!', fill='red')
+            print(f"ERROR: {e}")
+        
+
+ #   def check_user_type(self, account_name, guest_type):
+   #     if guest_type == 0:
+
 
 # main loop
         
