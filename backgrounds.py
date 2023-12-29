@@ -9,4 +9,4 @@ bg_long_path = '/home/waffleduffle/Desktop/python_proj_etti/GetLife/resources/ba
 
 
 
-# IMPORTANT - Change the path for backgrounds according to your prefences
+# IMPORTANT - Change the path for backgrounds according to your preferences
