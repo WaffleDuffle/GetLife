@@ -590,7 +590,7 @@ class Application(tk.Frame):
         self.db_cursor_programari.execute('SELECT * FROM Programari WHERE ProgramareID = %s', (self.selected_id,))
         self.programare_result = self.db_cursor_programari.fetchone()
 
-        self.db_cursor_pacienti.execute('UPDATE Medici SET Notificari = 1 WHERE Medici = %s', (self.programare_result[1],))
+        self.db_cursor_medici.execute('UPDATE Medici SET Notificari = 1 WHERE MedicID = %s', (self.programare_result[2],))
 
         self.db_cursor_programari.execute('UPDATE Programari SET Status = %s WHERE ProgramareID = %s', ('Canceled', self.selected_id,))
 
@@ -598,7 +598,7 @@ class Application(tk.Frame):
         string = f'Meeting has been canceled'
         self.send_notification('GetLife', string)
 
-    
+
     def send_notification(self, title, message):
         notification.notify(
             title=title,
