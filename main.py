@@ -84,25 +84,27 @@ class Application(tk.Frame):
 
 
     def check_cred(self, name1, name2):
+    # load environmental variables for admin username and password
         load_dotenv()
     # delete the previous text item if it exists, hasattr checks if given text exists before attempting to delete it
         if hasattr(self.canvas, 'text') and self.canvas.text is not None:
             self.canvas.delete(self.canvas.text)
         
-        ok = 0
+        ok = 0 # this variable checks for all the different guest types
 
         if name1 == os.getenv('NAME') and name2 == os.getenv('PASSWORD'):
             self.main_menu('admin', 1)
         else:
             ok += 1
 
+    # query to fetch username and password from Pacienti
         self.db_cursor_pacienti.execute("SELECT * FROM Pacienti WHERE Username = %s AND Parola = %s", (name1, name2))
         self.result_pacienti = self.db_cursor_pacienti.fetchone()
         if self.result_pacienti:
             self.main_menu(self.result_pacienti[6], 1) # username column for pacienti
         else:
             ok += 1
-
+    # querry to fetch username and password form Medici
         self.db_cursor_medici.execute("SELECT * FROM Medici WHERE Username = %s AND Parola = %s", (name1, name2))
         self.result_medici = self.db_cursor_medici.fetchone()
         if self.result_medici:
@@ -144,9 +146,22 @@ class Application(tk.Frame):
         self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.first_page())
         self.ret.pack(side='bottom')
 
+
+    def create_entry_register(self, label_text):
+
+        label = tk.Label(self.canvas, text=label_text, fg='white', bg='black')
+        label.pack()
+        if label_text == 'Enter your password:':
+            entry = tk.Entry(self.canvas, show='*')
+        else:
+            entry = tk.Entry(self.canvas)
+        entry.pack()
+        self.register_list.append(entry)
+
+
     def create_account(self):
         user_data = []
-
+    # entry_data gets all the entries from sign_up
         for entry_data in self.register_list:
             user_data.append(entry_data.get())
 
@@ -164,26 +179,12 @@ class Application(tk.Frame):
             print('Account created')
             self.login()
         except:
-            if hasattr(self.canvas, 'text'):
+            if hasattr(self.canvas, 'text'): # if self.canvas.text already exists, get rid of it
                 self.canvas.delete(self.canvas.text)    
             self.canvas.text = self.canvas.create_text(500, 525, anchor=tk.S,text='Blank fiedls or already used ID', fill='red')
         
-        
-        
 
-    def create_entry_register(self, label_text):
-
-        label = tk.Label(self.canvas, text=label_text, fg='white', bg='black')
-        label.pack()
-        if label_text == 'Enter your password:':
-            entry = tk.Entry(self.canvas, show='*')
-        else:
-            entry = tk.Entry(self.canvas)
-        entry.pack()
-        self.register_list.append(entry)
-        
-
-    def main_menu(self, account_name, guest_type):   #guest_type 1 = Pacient     0 = Doctor
+    def main_menu(self, account_name, guest_type):   #guest_type:     1 = Pacient     0 = Medic
         
     # refresh page
         self.refresh(back.bg_main_menu_image_path)
@@ -255,7 +256,7 @@ class Application(tk.Frame):
             print('OUT OF BOUNDS!!!')
             self.i = 0    
         self.print_medici()
-        
+                                            # next_doc and previous_doc are used to show doctors and go in circle
 
     def previous_doc(self):
         self.i -= 1
@@ -391,7 +392,7 @@ class Application(tk.Frame):
                 scheduling_list.append(pacient_id)
                 scheduling_list.append(medic_id)
                 scheduling_list.append(self.date_calendar.get_date())
-                scheduling_list.append(self.time_combobox.get()[0:5])
+                scheduling_list.append(self.time_combobox.get()[0:5])    # stirng splicing for time
                 scheduling_list.append(self.time_combobox.get()[6:11])
                 scheduling_list.append(self.location_combobox.get())
                 scheduling_list.append('Awaiting response...') 
@@ -408,13 +409,17 @@ class Application(tk.Frame):
                     str(scheduling_list[6])                                                                       #Confirmare
                     ))                                                  
                 
-                query = 'UPDATE Medici SET Notificari = 1 WHERE MedicID = %s'
+                query = 'UPDATE Medici SET Notificari = 1 WHERE MedicID = %s' 
+
                 self.db_cursor_programari.execute(query, (str(scheduling_list[1]),))
+
                 self.send_notification('GetLife', 'Your request has been submitted, awaiting response...')
                 conn.commit()
                 self.main_menu(account_name, 1)
+
             else:
                 print("No PacientID found for %s", (account_name,))
+
         except Exception as e:
             self.send_notification('Error', 'Slot already taken!')
             print(f"ERROR: {e}")
@@ -440,7 +445,7 @@ class Application(tk.Frame):
         self.tree.heading('#7', text='Locatie')
         self.tree.heading('#8', text='Confirmare')
 
-        self.programariID = []
+        self.programariID = [] # this ID list exists for easy selection in next combobox
 
     # button to fetch and display data
         fetch_button = tk.Button(self.new_window, text="Fetch Data", command=lambda: self.fetch_data(account_name, guest_type))
@@ -457,7 +462,7 @@ class Application(tk.Frame):
     def fetch_data(self, account_name, guest_type):
 
         try:
-            if guest_type == 0:  # check if guest is doctor
+            if guest_type == 0:  # if guest is doctor
                 self.db_cursor_programari.execute('SELECT MedicID FROM Medici WHERE Nume = %s', (account_name,))
                 medic_id = self.db_cursor_programari.fetchone()[0]
                 self.db_cursor_programari.execute('SELECT * FROM Programari WHERE MedicID = %s', (medic_id,))
@@ -465,8 +470,6 @@ class Application(tk.Frame):
                 self.db_cursor_programari.execute('SELECT PacientID FROM Pacienti WHERE Username = %s', (account_name,))
                 pacient_id = self.db_cursor_programari.fetchone()[0]
                 self.db_cursor_programari.execute('SELECT * FROM Programari WHERE PacientID = %s', (pacient_id,))
-
-            
 
         except Exception as e:
             print(f'ERROR: {e}')
@@ -477,7 +480,7 @@ class Application(tk.Frame):
     # update the Treeview with fetched data
         self.update_treeview(data)
 
-    #combobox for id selection
+    # combobox for id selection
         if guest_type == 0:
             self.medic_meeting_widgets()
         else:
