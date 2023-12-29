@@ -26,7 +26,7 @@ Integrează un sistem de notificări care să amintească pacienților despre co
 Permite pacienților să anuleze sau să reprogrammeze consultațiile într-un interval specific de timp, actualizând programul atât pentru pacienți, cât și pentru medici.
 
 
-## Run this commands before
+## Ruleaza aceste comenzi inainte
 1. Go to your project directory
 2. Setup virtual environment: `pip3 install virtualenv`
 3. Name virtual environment: `virtualenv env`
