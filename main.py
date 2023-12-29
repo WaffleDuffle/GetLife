@@ -183,7 +183,7 @@ class Application(tk.Frame):
         self.register_list.append(entry)
         
 
-    def main_menu(self, account_name, guest_type):
+    def main_menu(self, account_name, guest_type):   #guest_type 1 = Pacient     0 = Doctor
         
     # refresh page
         self.refresh(back.bg_main_menu_image_path)
@@ -205,7 +205,7 @@ class Application(tk.Frame):
             self.schedule_button.pack(pady= 15)
 
     #meeting button
-        self.schedule_button = tk.Button(self.canvas, text="Meetings", padx=50, pady=10, command=lambda: self.meetings(account_name))
+        self.schedule_button = tk.Button(self.canvas, text="Meetings", padx=50, pady=10, command=lambda: self.meetings(account_name, guest_type))
         self.schedule_button.pack(pady= 15)
         
     #refresh button
@@ -379,7 +379,7 @@ class Application(tk.Frame):
     def create_schedule(self, account_name):
         scheduling_list = []
         try:
-            # Fetch PacientID for the given account_name
+            # fetch PacientID for the given account_name
             self.db_cursor_programari.execute('SELECT PacientID FROM Pacienti WHERE Username = %s', (account_name,))
             pacient_id_result = self.db_cursor_programari.fetchone()
             
@@ -394,7 +394,7 @@ class Application(tk.Frame):
                 scheduling_list.append(self.time_combobox.get()[0:5])
                 scheduling_list.append(self.time_combobox.get()[6:11])
                 scheduling_list.append(self.location_combobox.get())
-                scheduling_list.append(1) # 0 - Rejected   1 - Awaiting response   2 - Accepted
+                scheduling_list.append('Awaiting response...') 
                 print(scheduling_list)
                 query = 'INSERT INTO Programari (PacientID, MedicID, DataProgramare, OraInceput, OraSfarsit, UniqueKey, Locatie, Confirmare) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'
                 self.db_cursor_programari.execute(query, (
@@ -408,7 +408,7 @@ class Application(tk.Frame):
                     str(scheduling_list[6])                                                                       #Confirmare
                     ))                                                  
                 
-                query = 'UPDATE Medici SET NumarProgramari = NumarProgramari + 1 WHERE MedicID = %s'
+                query = 'UPDATE Medici SET Notificari = 1 WHERE MedicID = %s'
                 self.db_cursor_programari.execute(query, (str(scheduling_list[1]),))
                 self.send_notification('GetLife', 'Your request has been submitted, awaiting response...')
                 conn.commit()
@@ -420,14 +420,18 @@ class Application(tk.Frame):
             print(f"ERROR: {e}")
         
 
-    def meetings(self, account_name):
-    
+    def meetings(self, account_name, guest_type):
+        
+        
+        
+    # new window because table is too big
         self.new_window = tk.Toplevel(self.canvas)
         self.new_window.title('Meetings')
 
+    # Treeview of Programari table
         self.tree = ttk.Treeview(self.new_window)
-        self.tree["columns"] = ("ProgramareID", "PacientID", "MedicID", "DataProgramare", "OraInceput", "OraSfarsit", "Locatie", "Confiramre")  # Add more columns as needed
-        self.tree.heading('#1', text='ProgramareID')  # First column, typically an ID column
+        self.tree["columns"] = ("ProgramareID", "PacientID", "MedicID", "DataProgramare", "OraInceput", "OraSfarsit", "Locatie", "Confiramre")  
+        self.tree.heading('#1', text='ProgramareID')  
         self.tree.heading('#2', text='PacientID')
         self.tree.heading('#3', text='MedicID')
         self.tree.heading('#4', text='DataProgramare')
@@ -436,41 +440,174 @@ class Application(tk.Frame):
         self.tree.heading('#7', text='Locatie')
         self.tree.heading('#8', text='Confirmare')
 
-    # Button to fetch and display data
-        fetch_button = tk.Button(self.new_window, text="Fetch Data", command=lambda: self.fetch_data(account_name))
+        self.programariID = []
+
+    # button to fetch and display data
+        fetch_button = tk.Button(self.new_window, text="Fetch Data", command=lambda: self.fetch_data(account_name, guest_type))
         fetch_button.pack(pady=10)
 
     # exit button
         self.quit = tk.Button(self.new_window, text="EXIT", padx=50, fg="red", command=self.new_window.destroy)
         self.quit.pack(side='bottom', pady=10)
 
-    # Pack the Treeview
+    # pack the Treeview
         self.tree.pack(fill=tk.BOTH)
 
-    def fetch_data(self, account_name):
-        self.db_cursor_programari.execute('SELECT MedicID FROM Medici WHERE Nume = %s', (account_name,))
-        medic_id = self.db_cursor_programari.fetchone()[0]
-        self.db_cursor_programari.execute('SELECT * FROM Programari WHERE MedicID = %s', (medic_id,))
+
+    def fetch_data(self, account_name, guest_type):
+
+        try:
+            if guest_type == 0:  # check if guest is doctor
+                self.db_cursor_programari.execute('SELECT MedicID FROM Medici WHERE Nume = %s', (account_name,))
+                medic_id = self.db_cursor_programari.fetchone()[0]
+                self.db_cursor_programari.execute('SELECT * FROM Programari WHERE MedicID = %s', (medic_id,))
+            else:
+                self.db_cursor_programari.execute('SELECT PacientID FROM Pacienti WHERE Username = %s', (account_name,))
+                pacient_id = self.db_cursor_programari.fetchone()[0]
+                self.db_cursor_programari.execute('SELECT * FROM Programari WHERE PacientID = %s', (pacient_id,))
+
+            
+
+        except Exception as e:
+            print(f'ERROR: {e}')
+            self.send_notification('GetLife', 'You have no meetings')
+            
         data = self.db_cursor_programari.fetchall()
 
-    # Update the Treeview with fetched data
+    # update the Treeview with fetched data
         self.update_treeview(data)
-    
+
+    #combobox for id selection
+        if guest_type == 0:
+            self.medic_meeting_widgets()
+        else:
+            self.pacient_meeting_widgets()
+
+
+
     def update_treeview(self, data):
-        # Clear existing data in the Treeview
+        self.programariID.clear() # clear existing data in list
+        
+        # clear existing data in the Treeview
         for row in self.tree.get_children():
             self.tree.delete(row)
 
-        # Insert new data into the Treeview
+        # insert new data into the Treeview
         for row in data:
             self.tree.insert("", "end", values=row[:6] + row[7:])
+            self.programariID.append(row[0])  # first column for ProgramareID
 
+
+
+    def medic_meeting_widgets(self):
+     # refresh widgets   
+        try:
+            self.id_label.destroy()
+            self.id_combobox.destroy()
+            self.accept_button.destroy()
+            self.reject_button.destroy()
+        except Exception as e:
+            print('first iteration')
+
+    # label for ID
+        self.id_label = tk.Label(self.new_window, text='Select an ID')
+        self.id_label.pack(pady=10)
+
+    # combobox for ID selection
+        self.id_combobox = ttk.Combobox(self.new_window, values=self.programariID, width=10)
+        self.id_combobox.pack(pady=10)
+
+    # button for accept
+        self.accept_button = tk.Button(self.new_window, padx=50, pady=10, text ='Accept', command=lambda:self.accept_meeting())
+        self.accept_button.pack(pady=10)
+        
+    #button for reject
+        self.reject_button = tk.Button(self.new_window, padx=50, pady=10, text ='Reject', command=lambda:self.reject_meeting())
+        self.reject_button.pack(pady=10)
+
+
+    def accept_meeting(self):
+        self.selected_id = self.id_combobox.get()
+
+        self.db_cursor_programari.execute('SELECT * FROM Programari WHERE ProgramareID = %s', (self.selected_id,))
+        self.programare_result = self.db_cursor_programari.fetchone()
+
+        self.db_cursor_pacienti.execute('UPDATE Pacienti SET Notificari = 1 WHERE PacientID = %s', (self.programare_result[1],))
+
+        self.db_cursor_programari.execute('UPDATE Programari SET Status = %s WHERE ProgramareID = %s', ('Accepted', self.selected_id,))
+
+        conn.commit()
+        string = f'A meeting has been established at {self.programare_result[7]}\nDate: {self.programare_result[3]}\nStarting hour: {str(self.programare_result[4])}\nFinish hour: {str(self.programare_result[5])}\nPacientID: {self.programare_result[1]}'
+        self.send_notification('GetLife', string)
+
+
+    def reject_meeting(self):
+
+        self.selected_id = self.id_combobox.get()
+
+        self.db_cursor_programari.execute('SELECT * FROM Programari WHERE ProgramareID = %s', (self.selected_id,))
+        self.programare_result = self.db_cursor_programari.fetchone()
+
+        self.db_cursor_pacienti.execute('UPDATE Pacienti SET Notificari = 1 WHERE PacientID = %s', (self.programare_result[1],))
+
+        self.db_cursor_programari.execute('UPDATE Programari SET Status = %s WHERE ProgramareID = %s', ('Rejected', self.selected_id,))
+
+        conn.commit()
+        string = f'Meeting has been rejected'
+        self.send_notification('GetLife', string)
+
+
+    def pacient_meeting_widgets(self):
+        # refresh widgets   
+        try:
+            self.id_label.destroy()
+            self.id_combobox.destroy()
+            self.cancel_button.destroy()
+            self.reschedule_button.destroy()
+        except Exception as e:
+            print('first iteration')
+
+    # label for ID
+        self.id_label = tk.Label(self.new_window, text='Select an ID')
+        self.id_label.pack(pady=10)
+
+    # combobox for ID selection
+        self.id_combobox = ttk.Combobox(self.new_window, values=self.programariID, width=10)
+        self.id_combobox.pack(pady=10)
+
+    # button for cancel
+        self.cancel_button = tk.Button(self.new_window, padx=50, pady=10, text ='Cancel', command=lambda:self.cancel_meeting())
+        self.cancel_button.pack(pady=10)
+        
+    #button for rescheduling
+        self.reschedule_button = tk.Button(self.new_window, padx=50, pady=10, text ='Reschedule', command=lambda:self.reschedule_meeting())
+        self.reschedule_button.pack(pady=10)
+
+    def cancel_meeting(self):
+
+        self.selected_id = self.id_combobox.get()
+
+        self.db_cursor_programari.execute('SELECT * FROM Programari WHERE ProgramareID = %s', (self.selected_id,))
+        self.programare_result = self.db_cursor_programari.fetchone()
+
+        self.db_cursor_pacienti.execute('UPDATE Medici SET Notificari = 1 WHERE Medici = %s', (self.programare_result[1],))
+
+        self.db_cursor_programari.execute('UPDATE Programari SET Status = %s WHERE ProgramareID = %s', ('Canceled', self.selected_id,))
+
+        conn.commit()
+        string = f'Meeting has been canceled'
+        self.send_notification('GetLife', string)
+
+    
     def send_notification(self, title, message):
         notification.notify(
             title=title,
             message=message,
-            app_name='GetLife',  # Specify your application name
+            app_name='GetLife',
         )
+
+
+
 # main loop
         
 if __name__ == '__main__':
