@@ -2,7 +2,7 @@ import tkinter as tk
 import os
 import backgrounds as back
 import mysql.connector
-import time
+import datetime
 from plyer import notification
 from tkinter import PhotoImage
 from tkinter import ttk
@@ -204,6 +204,10 @@ class Application(tk.Frame):
             self.schedule_button = tk.Button(self.canvas, text="Schedule a meeting", padx=50, pady=10, command=lambda: self.meeting_scheduling(account_name))
             self.schedule_button.pack(pady= 15)
 
+    #meeting button
+        self.schedule_button = tk.Button(self.canvas, text="Meetings", padx=50, pady=10, command=lambda: self.meetings(account_name))
+        self.schedule_button.pack(pady= 15)
+        
     #refresh button
         self.refresh_button = tk.Button(self.canvas, text="Refresh", command=lambda:self.main_menu(account_name, guest_type))
         self.refresh_button.pack(side='bottom', anchor='se')    
@@ -416,8 +420,50 @@ class Application(tk.Frame):
             print(f"ERROR: {e}")
         
 
- #   def check_user_type(self, account_name, guest_type):
-   #     if guest_type == 0:
+    def meetings(self, account_name):
+    
+        self.new_window = tk.Toplevel(self.canvas)
+        self.new_window.title('Meetings')
+
+        self.tree = ttk.Treeview(self.new_window)
+        self.tree["columns"] = ("ProgramareID", "PacientID", "MedicID", "DataProgramare", "OraInceput", "OraSfarsit", "Locatie", "Confiramre")  # Add more columns as needed
+        self.tree.heading('#1', text='ProgramareID')  # First column, typically an ID column
+        self.tree.heading('#2', text='PacientID')
+        self.tree.heading('#3', text='MedicID')
+        self.tree.heading('#4', text='DataProgramare')
+        self.tree.heading('#5', text='OraInceput')
+        self.tree.heading('#6', text='OraSfarsit')
+        self.tree.heading('#7', text='Locatie')
+        self.tree.heading('#8', text='Confirmare')
+
+    # Button to fetch and display data
+        fetch_button = tk.Button(self.new_window, text="Fetch Data", command=lambda: self.fetch_data(account_name))
+        fetch_button.pack(pady=10)
+
+    # exit button
+        self.quit = tk.Button(self.new_window, text="EXIT", padx=50, fg="red", command=self.new_window.destroy)
+        self.quit.pack(side='bottom', pady=10)
+
+    # Pack the Treeview
+        self.tree.pack(fill=tk.BOTH)
+
+    def fetch_data(self, account_name):
+        self.db_cursor_programari.execute('SELECT MedicID FROM Medici WHERE Nume = %s', (account_name,))
+        medic_id = self.db_cursor_programari.fetchone()[0]
+        self.db_cursor_programari.execute('SELECT * FROM Programari WHERE MedicID = %s', (medic_id,))
+        data = self.db_cursor_programari.fetchall()
+
+    # Update the Treeview with fetched data
+        self.update_treeview(data)
+    
+    def update_treeview(self, data):
+        # Clear existing data in the Treeview
+        for row in self.tree.get_children():
+            self.tree.delete(row)
+
+        # Insert new data into the Treeview
+        for row in data:
+            self.tree.insert("", "end", values=row[:6] + row[7:])
 
     def send_notification(self, title, message):
         notification.notify(
