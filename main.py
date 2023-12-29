@@ -111,7 +111,7 @@ class Application(tk.Frame):
             ok += 1
         
         if ok == 3:
-            self.canvas.text = self.canvas.create_text(500, 465, anchor=tk.S,text='Incorrect credentials!', fill='red')
+            self.send_notification('Error', 'Incorect Username or Password!')
             
 
     def sign_up(self):
@@ -373,8 +373,6 @@ class Application(tk.Frame):
         self.schedule.pack(pady=15)
     
     def create_schedule(self, account_name):
-        if hasattr(self.canvas, 'text') and self.canvas.text is not None:
-            self.canvas.delete(self.canvas.text)
         scheduling_list = []
         try:
             # Fetch PacientID for the given account_name
@@ -408,19 +406,25 @@ class Application(tk.Frame):
                 
                 query = 'UPDATE Medici SET NumarProgramari = NumarProgramari + 1 WHERE MedicID = %s'
                 self.db_cursor_programari.execute(query, (str(scheduling_list[1]),))
+                self.send_notification('GetLife', 'Your request has been submitted, awaiting response...')
                 conn.commit()
                 self.main_menu(account_name, 1)
             else:
                 print("No PacientID found for %s", (account_name,))
         except Exception as e:
-            self.canvas.text = self.canvas.create_text(500, 560, anchor=tk.S,text='Slot Already Taken!', fill='red')
+            self.send_notification('Error', 'Slot already taken!')
             print(f"ERROR: {e}")
         
 
  #   def check_user_type(self, account_name, guest_type):
    #     if guest_type == 0:
 
-
+    def send_notification(self, title, message):
+        notification.notify(
+            title=title,
+            message=message,
+            app_name='GetLife',  # Specify your application name
+        )
 # main loop
         
 if __name__ == '__main__':
