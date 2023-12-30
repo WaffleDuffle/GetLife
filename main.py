@@ -427,8 +427,6 @@ class Application(tk.Frame):
 
     def meetings(self, account_name, guest_type):
         
-        
-        
     # new window because table is too big
         self.new_window = tk.Toplevel(self.canvas)
         self.new_window.title('Meetings')
@@ -524,12 +522,13 @@ class Application(tk.Frame):
         self.accept_button = tk.Button(self.new_window, padx=50, pady=10, text ='Accept', command=lambda:self.accept_meeting())
         self.accept_button.pack(pady=10)
         
-    #button for reject
+    # button for reject
         self.reject_button = tk.Button(self.new_window, padx=50, pady=10, text ='Reject', command=lambda:self.reject_meeting())
         self.reject_button.pack(pady=10)
 
 
     def accept_meeting(self):
+
         self.selected_id = self.id_combobox.get()
 
         self.db_cursor_programari.execute('SELECT * FROM Programari WHERE ProgramareID = %s', (self.selected_id,))
@@ -586,6 +585,7 @@ class Application(tk.Frame):
         self.reschedule_button = tk.Button(self.new_window, padx=50, pady=10, text ='Reschedule', command=lambda:self.reschedule_meeting())
         self.reschedule_button.pack(pady=10)
 
+
     def cancel_meeting(self):
 
         self.selected_id = self.id_combobox.get()
@@ -601,6 +601,63 @@ class Application(tk.Frame):
         string = f'Meeting has been canceled'
         self.send_notification('GetLife', string)
 
+
+    def reschedule_meeting(self):
+
+    # new window for reschedule
+        self.reschedule_window = tk.Toplevel(self.new_window)
+        self.reschedule_window.title('Reschedule')
+
+        selected_id = self.id_combobox.get()
+
+    # label for date
+        self.reschedule_date_label = tk.Label(self.reschedule_window, text='Select a date:')
+        self.reschedule_date_label.pack()
+    # calendar    
+        self.reschedule_date_calendar = Calendar(self.reschedule_window, selectmode='day', date_pattern='yyyy-mm-dd')
+        self.reschedule_date_calendar.pack(pady=5)
+
+        
+        time_list = ['08:00-09:00','09:00-10:00','10:00-11:00','11:00-12:00','12:00-13:00',
+                     '13:00-14:00','14:00-15:00','15:00-16:00','16:00-17:00','17:00-18:00']
+        
+        
+    # label for time
+        self.reschedule_time_label = tk.Label(self.reschedule_window, text='Select a time')
+        self.reschedule_time_label.pack()
+    # combobox for time
+        self.reschedule_time_combobox = ttk.Combobox(self.reschedule_window, values=time_list, width=10)
+        self.reschedule_time_combobox.pack(pady=5)
+
+    # exit button
+        self.quit = tk.Button(self.reschedule_window, text="EXIT", padx=50, fg="red", command=lambda:self.reschedule_window.destroy())
+        self.quit.pack(side='bottom', pady=10)
+
+    # ok button
+        self.ok_button = tk.Button(self.reschedule_window, text="OK", padx=50, command=lambda:self.reschedule(selected_id))
+        self.ok_button.pack(side='bottom', pady=10)
+
+    
+    def reschedule(self, selected_id):
+        rescheduling_list = []
+        try:
+            rescheduling_list.append(self.reschedule_date_calendar.get_date())
+            rescheduling_list.append(self.reschedule_time_combobox.get()[0:5])    # stirng splicing for time
+            rescheduling_list.append(self.reschedule_time_combobox.get()[6:11])
+
+        # this query updates the already existing meetin, uniqueid must be updated by concatenating the first character coresponding to medic ID 
+            # with the new key
+            query = 'UPDATE Programari SET DataProgramare = %s, OraInceput = %s, OraSfarsit = %s, UniqueKey = CONCAT(SUBSTRING(UniqueKey, 1), %s), Status = %s WHERE ProgramareID = %s'
+
+            self.db_cursor_programari.execute(query, (rescheduling_list[0], rescheduling_list[1], rescheduling_list[2], 
+                                                      str(rescheduling_list[1]+rescheduling_list[2]),'Rescheduled, awaiting response...', selected_id,))
+
+            conn.commit()
+            self.send_notification('GetLife', 'Meeting has been rescheduled, awaiting respone...')
+            self.reschedule_window.destroy()
+        except Exception as e:
+            print(f'ERROR: {e}')
+            self.send_notification('ERROR', 'Slot already taken!')            
 
     def send_notification(self, title, message):
         notification.notify(
