@@ -185,6 +185,8 @@ class Application(tk.Frame):
         
 
     def main_menu(self, account_name, guest_type):   #guest_type:     1 = Pacient     0 = Medic
+
+        
         
     # refresh page
         self.refresh(back.bg_main_menu_image_path)
@@ -397,7 +399,7 @@ class Application(tk.Frame):
                 scheduling_list.append(self.location_combobox.get())
                 scheduling_list.append('Awaiting response...') 
                 print(scheduling_list)
-                query = 'INSERT INTO Programari (PacientID, MedicID, DataProgramare, OraInceput, OraSfarsit, UniqueKey, Locatie, Confirmare) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'
+                query = 'INSERT INTO Programari (PacientID, MedicID, DataProgramare, OraInceput, OraSfarsit, UniqueKey, Locatie, Status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'
                 self.db_cursor_programari.execute(query, (
                     str(scheduling_list[0]),                                                                      #PacientID
                     str(scheduling_list[1]),                                                                      #MedicID
@@ -406,7 +408,7 @@ class Application(tk.Frame):
                     scheduling_list[4],                                                                           #OraSfarsit
                     str(scheduling_list[1]) + scheduling_list[2] + scheduling_list[3] + scheduling_list[4],       #UniqueKey
                     scheduling_list[5],                                                                           #Locatie
-                    str(scheduling_list[6])                                                                       #Confirmare
+                    str(scheduling_list[6])                                                                       #Status
                     ))                                                  
                 
                 query = 'UPDATE Medici SET Notificari = 1 WHERE MedicID = %s' 
@@ -426,7 +428,7 @@ class Application(tk.Frame):
         
 
     def meetings(self, account_name, guest_type):
-        
+
     # new window because table is too big
         self.new_window = tk.Toplevel(self.canvas)
         self.new_window.title('Meetings')
@@ -458,16 +460,17 @@ class Application(tk.Frame):
 
 
     def fetch_data(self, account_name, guest_type):
-
+        
+        conn.commit()
         try:
             if guest_type == 0:  # if guest is doctor
                 self.db_cursor_programari.execute('SELECT MedicID FROM Medici WHERE Nume = %s', (account_name,))
                 medic_id = self.db_cursor_programari.fetchone()[0]
-                self.db_cursor_programari.execute('SELECT * FROM Programari WHERE MedicID = %s', (medic_id,))
+                self.db_cursor_programari.execute('SELECT * FROM Programari WHERE MedicID = %s ORDER BY FIELD(Status, "Awaiting response...", "Rescheduled, awaiting response...", "Accepted", "Rejected") DESC', (medic_id,))
             else:
                 self.db_cursor_programari.execute('SELECT PacientID FROM Pacienti WHERE Username = %s', (account_name,))
                 pacient_id = self.db_cursor_programari.fetchone()[0]
-                self.db_cursor_programari.execute('SELECT * FROM Programari WHERE PacientID = %s', (pacient_id,))
+                self.db_cursor_programari.execute('SELECT * FROM Programari WHERE PacientID = %s ORDER BY FIELD(Status, "Awaiting response...", "Rescheduled, awaiting response...", "Accepted", "Rejected") DESC', (pacient_id,))
 
         except Exception as e:
             print(f'ERROR: {e}')
@@ -475,6 +478,8 @@ class Application(tk.Frame):
             
         data = self.db_cursor_programari.fetchall()
 
+        
+        
     # update the Treeview with fetched data
         self.update_treeview(data)
 
@@ -647,10 +652,14 @@ class Application(tk.Frame):
 
         # this query updates the already existing meetin, uniqueid must be updated by concatenating the first character coresponding to medic ID 
             # with the new key
-            query = 'UPDATE Programari SET DataProgramare = %s, OraInceput = %s, OraSfarsit = %s, UniqueKey = CONCAT(SUBSTRING(UniqueKey, 1), %s), Status = %s WHERE ProgramareID = %s'
+            query = 'UPDATE Programari SET UniqueKey = LEFT(UniqueKey, 1) WHERE ProgramareID = %s'
+            self.db_cursor_programari.execute(query, (selected_id,))
+
+            query = 'UPDATE Programari SET DataProgramare = %s, OraInceput = %s, OraSfarsit = %s, UniqueKey = CONCAT(UniqueKey, %s), Status = %s WHERE ProgramareID = %s'
 
             self.db_cursor_programari.execute(query, (rescheduling_list[0], rescheduling_list[1], rescheduling_list[2], 
-                                                      str(rescheduling_list[1]+rescheduling_list[2]),'Rescheduled, awaiting response...', selected_id,))
+                                                      str(rescheduling_list[0]+rescheduling_list[1]+rescheduling_list[2]),
+                                                      'Rescheduled, awaiting response...', selected_id,))
 
             conn.commit()
             self.send_notification('GetLife', 'Meeting has been rescheduled, awaiting respone...')
@@ -658,6 +667,7 @@ class Application(tk.Frame):
         except Exception as e:
             print(f'ERROR: {e}')
             self.send_notification('ERROR', 'Slot already taken!')            
+
 
     def send_notification(self, title, message):
         notification.notify(
