@@ -186,7 +186,7 @@ class Application(tk.Frame):
 
     def main_menu(self, account_name, guest_type):   #guest_type:     1 = Pacient     0 = Medic
 
-        
+        self.check_notification(account_name, guest_type)
         
     # refresh page
         self.refresh(back.bg_main_menu_image_path)
@@ -435,7 +435,7 @@ class Application(tk.Frame):
 
     # Treeview of Programari table
         self.tree = ttk.Treeview(self.new_window)
-        self.tree["columns"] = ("ProgramareID", "PacientID", "MedicID", "DataProgramare", "OraInceput", "OraSfarsit", "Locatie", "Confiramre")  
+        self.tree["columns"] = ("ProgramareID", "PacientID", "MedicID", "DataProgramare", "OraInceput", "OraSfarsit", "Locatie", "Status")  
         self.tree.heading('#1', text='ProgramareID')  
         self.tree.heading('#2', text='PacientID')
         self.tree.heading('#3', text='MedicID')
@@ -443,7 +443,7 @@ class Application(tk.Frame):
         self.tree.heading('#5', text='OraInceput')
         self.tree.heading('#6', text='OraSfarsit')
         self.tree.heading('#7', text='Locatie')
-        self.tree.heading('#8', text='Confirmare')
+        self.tree.heading('#8', text='Status')
 
         self.programariID = [] # this ID list exists for easy selection in next combobox
 
@@ -668,11 +668,33 @@ class Application(tk.Frame):
             print(f'ERROR: {e}')
             self.send_notification('ERROR', 'Slot already taken!')            
 
+    def check_notification(self, account_name, guest_type):
+       #if guest is medic 
+        if guest_type == 0:
+            self.db_cursor_medici.execute('SELECT Notificari FROM Medici WHERE Nume = %s', (account_name,))
+            notificare = self.db_cursor_medici.fetchone()[0]
+            self.db_cursor_medici.nextset()
 
-    def send_notification(self, title, message):
+            if notificare == 1:    # if there are changes to entires
+                self.send_notification('GetLife', 'You have new entries, check your inbox')
+                self.db_cursor_medici.execute('UPDATE Medici SET Notificari = 0 WHERE Nume = %s', (account_name,))
+                conn.commit()
+
+        #else guest is pacient
+        else:
+            self.db_cursor_pacienti.execute('SELECT Notificari FROM Pacienti WHERE Username = %s', (account_name,))
+            notificare = self.db_cursor_pacienti.fetchone()[0]
+            self.db_cursor_pacienti.nextset()
+            if notificare == 1:     # if there are changes to entires
+                self.send_notification('GetLife', 'You have new entries, check your inbox')
+                self.db_cursor_pacienti.execute('UPDATE Pacient SET Notificari = 0 WHERE Username = %s', (account_name,))
+                conn.commit()
+
+
+    def send_notification(self, tmp_title, tmp_message):
         notification.notify(
-            title=title,
-            message=message,
+            title=tmp_title,
+            message=tmp_message,
             app_name='GetLife',
         )
 
