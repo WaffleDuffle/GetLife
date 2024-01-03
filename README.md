@@ -37,4 +37,5 @@ Permite pacienților să anuleze sau să reprogrammeze consultațiile într-un i
 8. Install plyer: `pip install plyer`
 9. Install lidbus: `sudo apt-get install libdbus-glib-1-dev libdbus-1-dev`
 10. Install dbus: `pip install dbus-python`
+11. Install mysql-connector: `sudo apt install mysql-connector-python`
 
