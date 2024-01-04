@@ -1,32 +1,32 @@
 # GetLife
 ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ![logo](https://github.com/WaffleDuffle/GetLife/blob/main/resources/logo.png)
 
-Dezvoltă un sistem de programare online care să permită pacienților să programeze consultații la spital printr-o `interfață grafică (GUI)` realizată cu ajutorul bibliotecii Tkinter în Python. Acest proiect urmărește să eficientizeze procesul de programare, facilitând pacienților accesul la serviciile medicale.
+Develop a scheduling system to allow patients to schedule hospital appointments through a `graphical interface (GUI)` made using the Tkinter library in Python. This project aims to streamline the scheduling process, facilitating patients' access to medical services.
 
-## Caracteristici
-### 1. Interfață Grafică Prietenoasă:
-Proiectează o interfață grafică intuitivă și atrăgătoare folosind Tkinter, asigurându-te că pacienții pot interacționa ușor cu sistemul.
+## Functionalities
+### 1. Graphical interface:
+Design an intuitive and attractive GUI using Tkinter, ensuring patients can easily interact with the system.
 
-### 2. Profiluri de Doctori:
-Creeze profile pentru fiecare medic, afișând informații precum nume, specialitate, disponibilitate și detalii de contact.
+### 2. Doctor Profiles:
+Create profiles for each doctor, displaying information such as name, specialty, availability and contact details.
 
-### 3. Programare de Consultații:
-Implementează un sistem care permite pacienților să programeze consultații, selectând data și intervalul orar preferat din opțiunile disponibile.
+### 3. Scheduling:
+Implement a system that allows patients to schedule consultations by selecting their preferred date and time slot from the available options.
 
-### 4. Înregistrare Pacienți:
-Include un sistem de înregistrare a pacienților în care aceștia pot crea conturi, furnizând detalii precum nume, informații de contact și eventuale antecedente medicale.
+### 4. Pacient Registration:
+Include a patient registration system where patients can create accounts, providing details such as name, contact information and any medical history.
 
-### 5. Confirmare Programare:
-Trimite notificări de confirmare atât pacienților, cât și medicilor, odată ce programarea a fost efectuată cu succes, includând detalii precum dată, oră și locație.
+### 5. Confirmation:
+Send confirmations to both patients and doctors once the appointment has been successfully made, including details such as date, time and location.
 
-### 6. Notificări de Remindere:
-Integrează un sistem de notificări care să amintească pacienților despre consultațiile iminente, reducând riscul absențelor neanunțate.
+### 6. Reminders:
+Integrate a notification system to remind patients about upcoming appointments, reducing the risk of unannounced absences.
 
-### 7. Anulare și Replanificare:
-Permite pacienților să anuleze sau să reprogrammeze consultațiile într-un interval specific de timp, actualizând programul atât pentru pacienți, cât și pentru medici.
+### 7. Cancel And Reschedule:
+Allow patients to cancel or reschedule appointments within a specific time frame, updating the schedule for both patients and doctors.
 
 
-## Ruleaza aceste comenzi inainte
+## Before Running:
 1. Go to your project directory
 2. Setup virtual environment: `pip3 install virtualenv`
 3. Name virtual environment: `virtualenv env`
