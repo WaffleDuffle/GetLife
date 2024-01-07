@@ -39,7 +39,7 @@ class Application(tk.Frame):
         self.blank.pack(pady = 155)
 
     # load exit button
-        self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=root.destroy)
+        self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=lambda:self.exit_program())
         self.quit.pack(side='bottom', pady=30)
 
     # load login widgets
@@ -75,7 +75,7 @@ class Application(tk.Frame):
         self.check.pack(side="top", pady= 30)
 
     # exit button
-        self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=root.destroy)
+        self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=lambda:self.exit_program())
         self.quit.pack(side='bottom', pady=30)
 
     # return button
@@ -139,7 +139,7 @@ class Application(tk.Frame):
         self.sign.pack(side="top", pady= 30)
 
     # exit button
-        self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=root.destroy)
+        self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=lambda:self.exit_program())
         self.quit.pack(side='bottom', pady=30)
     
     # return button
@@ -216,7 +216,7 @@ class Application(tk.Frame):
         self.refresh_button.pack(side='bottom', anchor='se')    
 
     # exit button
-        self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=root.destroy)
+        self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=lambda:self.exit_program())
         self.quit.pack(side='bottom', pady=30)
 
     
@@ -297,13 +297,13 @@ class Application(tk.Frame):
         
 
 
-    def refresh(self, background_name):
+    def refresh(self, background_path):
     # delete widgets
         for widget in self.canvas.winfo_children():
             widget.destroy()
     # import background
         self.canvas.delete("all")
-        self.bg_image = PhotoImage(file=background_name)
+        self.bg_image = PhotoImage(file=background_path)
         self.canvas.pack()
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.bg_image)
         
@@ -687,7 +687,7 @@ class Application(tk.Frame):
             self.db_cursor_pacienti.nextset()
             if notificare == 1:     # if there are changes to entires
                 self.send_notification('GetLife', 'You have new entries, check your inbox')
-                self.db_cursor_pacienti.execute('UPDATE Pacient SET Notificari = 0 WHERE Username = %s', (account_name,))
+                self.db_cursor_pacienti.execute('UPDATE Pacienti SET Notificari = 0 WHERE Username = %s', (account_name,))
                 conn.commit()
 
 
@@ -698,22 +698,35 @@ class Application(tk.Frame):
             app_name='GetLife',
         )
 
+    def exit_program(self):
+        self.db_cursor_medici.close()
+        self.db_cursor_pacienti.close()
+        self.db_cursor_programari.close()
+        print('End of program')
+        root.destroy()
 
 
 # main loop
         
 if __name__ == '__main__':
     root = tk.Tk()
-    load_dotenv()
-    conn = mysql.connector.connect(
-        host = os.getenv('HOST'),
-        password = os.getenv('DB_PASSWORD'), 
-        user = os.getenv('DB_USER'), 
-        database = os.getenv('DATABASE')
-    )
 
-if conn.is_connected():
-    print('Connection established...')
-    
-app = Application(master=root)
-app.mainloop()
+    #load environment varaibles
+    load_dotenv()
+
+    #trying to connect
+    try:
+        conn = mysql.connector.connect(
+            host = os.getenv('HOST'),
+            password = os.getenv('DB_PASSWORD'), 
+            user = os.getenv('DB_USER'), 
+            database = os.getenv('DATABASE')
+        )
+        print('Connection established...')
+        app = Application(master=root)
+        app.mainloop()
+
+    except Exception as e:
+        print(e)
+        print('Connection failed')    
+
