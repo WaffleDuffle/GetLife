@@ -298,15 +298,18 @@ class Application(tk.Frame):
 
 
     def refresh(self, background_path):
-    # delete widgets
+    # Delete widgets
         for widget in self.canvas.winfo_children():
             widget.destroy()
-    # import background
+
+        # Import background using PIL
         self.canvas.delete("all")
-        self.bg_image = PhotoImage(file=background_path)
-        self.canvas.pack()
+        pil_image = Image.open(background_path)
+        self.bg_image = ImageTk.PhotoImage(pil_image)
+
+        # Create image on canvas
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.bg_image)
-        
+        self.canvas.pack()
 
     def meeting_scheduling(self, account_name):
         
