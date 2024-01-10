@@ -2,7 +2,7 @@ import tkinter as tk
 import os
 import backgrounds as back
 import mysql.connector
-import datetime
+from datetime import datetime, timedelta
 from plyer import notification
 from tkinter import PhotoImage
 from tkinter import ttk
@@ -185,8 +185,12 @@ class Application(tk.Frame):
         
 
     def main_menu(self, account_name, guest_type):   #guest_type:     1 = Pacient     0 = Medic
-
+    #check if you have notifications
         self.check_notification(account_name, guest_type)
+
+    #check if you have reminders
+        if guest_type == 1:
+            self.reminders(account_name)
         
     # refresh page
         self.refresh(back.bg_main_menu_image_path)
@@ -590,7 +594,7 @@ class Application(tk.Frame):
         self.cancel_button.pack(pady=10)
         
     #button for rescheduling
-        self.reschedule_button = tk.Button(self.new_window, padx=50, pady=10, text ='Reschedule', command=lambda:self.reschedule_meeting())
+        self.reschedule_button = tk.Button(self.new_window, padx=35, pady=10, text ='Reschedule', command=lambda:self.reschedule_meeting())
         self.reschedule_button.pack(pady=10)
 
 
@@ -694,6 +698,36 @@ class Application(tk.Frame):
                 conn.commit()
 
 
+    def reminders(self, account_name):
+    #fetch corresponding data
+        self.db_cursor_programari.execute('SELECT PacientID FROM Pacienti WHERE Username = %s', (account_name,))
+        pacient_id = self.db_cursor_programari.fetchone()[0]
+        self.db_cursor_programari.execute('SELECT * FROM Programari WHERE PacientID = %s', (pacient_id,))
+        data = self.db_cursor_programari.fetchall()
+
+        current_datetime = datetime.now()
+
+        for element in data:
+            if element[9] == 0 and element[8] == 'Accepted':
+                date_value = element[3]  # Data
+                start_time_value = element[4]  # OraInceput
+
+
+                # Convert timedelta to time
+                start_time = (datetime.min + start_time_value).time()
+
+                appointment_datetime = datetime.combine(date_value, start_time)  # Combine date and start time
+
+                # Calculate the time difference
+                time_difference = appointment_datetime - current_datetime
+                # Check if the time difference is less than one hour
+                if timedelta(minutes=0) <= time_difference <= timedelta(days=1):
+                    self.send_notification('Reminder', f'You have an upcoming meeting today at {element[4]}\n{element[7]}')
+                    print(element[0])
+                    self.db_cursor_programari.execute('UPDATE Programari SET Reminder = 1 WHERE ProgramareID = %s', (element[0],))
+                    conn.commit()
+            
+
     def send_notification(self, tmp_title, tmp_message):
         notification.notify(
             title=tmp_title,
@@ -708,6 +742,7 @@ class Application(tk.Frame):
         print('End of program')
         root.destroy()
 
+    
 
 # main loop
         
