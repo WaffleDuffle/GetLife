@@ -26,7 +26,7 @@ class Application(tk.Frame):
         
     
     def first_page(self):
-    # define cursor for pacienti and medici tables
+    # define cursor for pacienti, medici and programari tables
         self.db_cursor_pacienti = conn.cursor()
         self.db_cursor_medici = conn.cursor()
         self.db_cursor_programari = conn.cursor()
@@ -86,9 +86,7 @@ class Application(tk.Frame):
     def check_cred(self, name1, name2):
     # load environmental variables for admin username and password
         load_dotenv()
-    # delete the previous text item if it exists, hasattr checks if given text exists before attempting to delete it
-        if hasattr(self.canvas, 'text') and self.canvas.text is not None:
-            self.canvas.delete(self.canvas.text)
+    
         
         ok = 0 # this variable checks for all the different guest types
 
@@ -167,7 +165,7 @@ class Application(tk.Frame):
 
          
         try:
-            self.db_cursor_pacienti.execute('INSERT INTO Pacienti (PacientID, Nume, prenume, DetaliiContact, AntecedenteMedicale, Parola, Username) VALUES ('
+            self.db_cursor_pacienti.execute('INSERT INTO Pacienti (PacientID, Nume, Prenume, DetaliiContact, AntecedenteMedicale, Parola, Username) VALUES ('
                                             + user_data[2] + ','
                                             + "'" + user_data[3] + "'" + ','
                                             + "'" + user_data[4] + "'" + ','
@@ -176,12 +174,11 @@ class Application(tk.Frame):
                                             + "'" + user_data[1] + "'" + ','
                                             + "'" + user_data[0] + "'" + ')') # register widgets order doesn't correspond to database columns orders, I know
             conn.commit()
-            print('Account created')
+            self.send_notification('GetLife', 'Account created')
             self.login()
         except:
-            if hasattr(self.canvas, 'text'): # if self.canvas.text already exists, get rid of it
-                self.canvas.delete(self.canvas.text)    
-            self.canvas.text = self.canvas.create_text(500, 525, anchor=tk.S,text='Blank fiedls or already used ID', fill='red')
+            self.send_notification('Error', 'Blank fields or already used ID') 
+            
         
 
     def main_menu(self, account_name, guest_type):   #guest_type:     1 = Pacient     0 = Medic
@@ -238,15 +235,19 @@ class Application(tk.Frame):
         self.canvas.account_text = self.canvas.create_text(5, 695, anchor=tk.SW,text='Logged in as: ' + account_name, font=12)
 
     # initialize cursor in database
-        self.db_cursor_medici = conn.cursor() 
         self.db_cursor_medici.execute("SELECT * FROM Medici")
         self.db_result = self.db_cursor_medici.fetchall()
-        self.i = 0
+        self.increment = 0
         
 
     # buttons for crossing 
-        self.next_button = tk.Button(self.canvas, padx = 28, text='Next', command=lambda: self.next_doc()).pack(side=tk.RIGHT, anchor=tk.CENTER, padx=20)
-        self.previous_button = tk.Button(self.canvas, text='Previous', command=lambda: self.previous_doc()).pack(side=tk.LEFT,padx=20)
+        self.next_button = tk.Button(self.canvas, padx = 28, text='Next', command=lambda: self.next_doc())
+
+        self.next_button.pack(side=tk.RIGHT, padx=20)
+
+        self.previous_button = tk.Button(self.canvas, text='Previous', command=lambda: self.previous_doc())
+
+        self.previous_button.pack(side=tk.LEFT,padx=20)
 
     # return button
         self.ret = tk.Button(self.canvas, text="Return", padx=50, command=lambda:self.main_menu(account_name, guest_type))
@@ -257,18 +258,18 @@ class Application(tk.Frame):
 
     def next_doc(self):
         
-        self.i += 1
-        if self.i == len(self.db_result) or self.i < 0:
+        self.increment += 1
+        if self.increment == len(self.db_result) or self.increment < 0:
             print('OUT OF BOUNDS!!!')
-            self.i = 0    
+            self.increment = 0    
         self.print_medici()
                                             # next_doc and previous_doc are used to show doctors and go in circle
 
     def previous_doc(self):
-        self.i -= 1
-        if self.i == len(self.db_result) or self.i < 0:
+        self.increment -= 1
+        if self.increment == len(self.db_result) or self.increment < 0:
             print('OUT OF BOUNDS!!!')
-            self.i = len(self.db_result) - 1            
+            self.increment = len(self.db_result) - 1            
         self.print_medici()
         
         
@@ -280,7 +281,7 @@ class Application(tk.Frame):
             for label in self.lista_date:
                 label.pack_forget()
 
-        self.image_path = 'resources/' + str(self.i) + '.png'
+        self.image_path = 'resources/' + str(self.increment) + '.png'
         self.image = Image.open(self.image_path)
         self.photo = ImageTk.PhotoImage(self.image)
 
@@ -290,11 +291,11 @@ class Application(tk.Frame):
 
     # label list for data
         self.lista_date = []
-        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='ID: ' + str(self.db_result[self.i][0])))
-        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Nume: ' + str(self.db_result[self.i][1])))
-        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Specialitate: ' + str(self.db_result[self.i][2])))
-        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Disponibilitate: ' + str(self.db_result[self.i][3])))
-        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Contact: ' + str(self.db_result[self.i][4])))
+        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='ID: ' + str(self.db_result[self.increment][0])))
+        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Nume: ' + str(self.db_result[self.increment][1])))
+        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Specialitate: ' + str(self.db_result[self.increment][2])))
+        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Disponibilitate: ' + str(self.db_result[self.increment][3])))
+        self.lista_date.append(tk.Label(self.canvas, borderwidth=2, relief='raised', text='Contact: ' + str(self.db_result[self.increment][4])))
     # label packing
         for label in self.lista_date:
             label.pack(pady=5)
@@ -567,8 +568,7 @@ class Application(tk.Frame):
         self.db_cursor_programari.execute('UPDATE Programari SET Status = %s WHERE ProgramareID = %s', ('Rejected', self.selected_id,))
 
         conn.commit()
-        string = f'Meeting has been rejected'
-        self.send_notification('GetLife', string)
+        self.send_notification('GetLife', 'Meeting has been rejected')
 
 
     def pacient_meeting_widgets(self):
@@ -610,8 +610,7 @@ class Application(tk.Frame):
         self.db_cursor_programari.execute('UPDATE Programari SET Status = %s WHERE ProgramareID = %s', ('Canceled', self.selected_id,))
 
         conn.commit()
-        string = f'Meeting has been canceled'
-        self.send_notification('GetLife', string)
+        self.send_notification('GetLife', 'Meeting has been canceled')
 
 
     def reschedule_meeting(self):
