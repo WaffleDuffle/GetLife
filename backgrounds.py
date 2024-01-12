@@ -9,4 +9,3 @@ bg_long_path = 'resources/background_long.png'
 
 
 
-# IMPORTANT - Change the path for backgrounds according to your preferences
