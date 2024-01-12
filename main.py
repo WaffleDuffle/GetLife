@@ -220,8 +220,6 @@ class Application(tk.Frame):
         self.quit = tk.Button(self.canvas, text="EXIT", padx=50, fg="red", command=lambda:self.exit_program())
         self.quit.pack(side='bottom', pady=30)
 
-    
-
     # logout button
         self.log_out = tk.Button(self.canvas, text='Log Out', command=lambda:self.login())
         self.log_out.pack(side='bottom')
